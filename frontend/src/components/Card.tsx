@@ -376,7 +376,8 @@ export default function Card(props: CardProps) {
     const isTamerWithDP = numbersWithModifiers.includes(card.cardNumber);
 
     const isModifiersAllowed =
-        [...myBALocations, ...opponentBALocations].includes(location) && (card.cardType === "Digimon" || isTamerWithDP);
+        [...myBALocations, ...opponentBALocations].includes(location) &&
+        (card.cardType.includes("Digimon") || isTamerWithDP);
     const modifiers = isModifiersAllowed ? card.modifiers : undefined;
 
     const linkDP = linkCardsForLocation.reduce((sum, card) => sum + (card.linkDP ?? 0), 0);

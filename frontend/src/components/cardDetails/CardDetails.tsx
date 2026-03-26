@@ -157,12 +157,29 @@ export default function CardDetails() {
                                     <DetailsHeaderTooltipContent explanation={getDetailsHeaderTooltipTitle(cardType)} />
                                 }
                             >
-                                <img
-                                    width={30}
-                                    style={{ padding: 2 }}
-                                    alt={"cardType"}
-                                    src={getCardTypeImage(cardType)}
-                                />
+                                {cardType.split("/").length === 1 ? (
+                                    <img
+                                        width={30}
+                                        style={{ padding: 2 }}
+                                        alt={"cardType"}
+                                        src={getCardTypeImage(cardType)}
+                                    />
+                                ) : (
+                                    <div style={{ display: "flex" }}>
+                                        <img
+                                            width={30}
+                                            style={{ padding: 2, paddingRight: 1 }}
+                                            alt={"cardType"}
+                                            src={getCardTypeImage(cardType.split("/")[0])}
+                                        />
+                                        <img
+                                            width={30}
+                                            style={{ padding: 2, paddingLeft: 1 }}
+                                            alt={"cardType"}
+                                            src={getCardTypeImage(cardType.split("/")[1])}
+                                        />
+                                    </div>
+                                )}
                             </DetailsHeaderTooltip>
                         )}
 

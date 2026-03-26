@@ -273,7 +273,7 @@ export const useDeckStates = create<State>((set, get) => ({
         if (color) filteredData = filteredData.filter((card) => card.color.includes(color));
         if (color2) filteredData = filteredData.filter((card) => card.color.includes(color2));
         if (color3) filteredData = filteredData.filter((card) => card.color.includes(color3));
-        if (cardType) filteredData = filteredData.filter((card) => card.cardType === cardType);
+        if (cardType) filteredData = filteredData.filter((card) => card.cardType.includes(cardType));
         if (stage) filteredData = filteredData.filter((card) => card.stage === stage);
         if (attribute) filteredData = filteredData.filter((card) => card.attribute === attribute);
         if (digiType)
