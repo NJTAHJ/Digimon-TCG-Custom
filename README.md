@@ -20,7 +20,6 @@ Join our [discord community](https://discord.gg/sBdByGAh2y)!
   ---
 
 **Upcoming**:
-- Allow saving WIP decks.
 - Spectator mode.
 - Desktop client.
 - Reimplement bots.
