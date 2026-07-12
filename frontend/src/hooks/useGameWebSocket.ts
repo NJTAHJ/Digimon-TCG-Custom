@@ -7,11 +7,7 @@ import { useGeneralStates } from "./useGeneralStates.ts";
 import { useSound } from "./useSound.ts";
 import { useGameUIStates } from "./useGameUIStates.ts";
 
-const currentPort = window.location.port;
-const currentUrl = window.location.origin.replace("https://", "");
-// TODO: using www.project-drasil.online as the domain is not working, need a fix
-const websocketURL =
-    currentPort === "5173" ? "ws://192.168.0.26:8080/api/ws/game" : "wss://" + currentUrl + "/api/ws/game";
+const websocketURL = "wss://zany-space-waddle-v6px665rp9642x679-8080.app.github.dev/api/ws/game";
 
 type UseGameWebSocketProps = {
     clearAttackAnimation: (() => void) | null;
