@@ -33,6 +33,7 @@ import { useDeckStates } from "../hooks/useDeckStates.ts";
 import { useNavigate } from "react-router-dom";
 import DeckPanel from "../components/deckPanel/DeckPanel.tsx";
 import axios from "axios";
+import { WSUtils } from "./GamePage.tsx";
 
 export default function DeckTest() {
     const selectCard = useGeneralStates((state) => state.selectCard);
@@ -567,8 +568,8 @@ export default function DeckTest() {
     }
 
     // Mock WSUtils for components that need it (simplified for direct gameplay)
-    const mockWSUtils = {
-        matchInfo: { gameId: "test-mode", user, opponentName: "Test Dummy" },
+    const mockWSUtils: WSUtils = {
+        matchInfo: { gameId: "test", user: user, opponentName: "opponent", isSpectator: false },
         sendMessage: mockSendMessage,
         sendMoveCard,
         sendChatMessage,

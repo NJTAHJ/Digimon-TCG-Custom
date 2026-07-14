@@ -9,19 +9,13 @@ import { useGameUIStates } from "./useGameUIStates.ts";
 
 const getWebsocketURL = () => {
     const host = window.location.host;
-    
-    // 1. If running inside GitHub Codespaces
     if (host.includes("github.dev")) {
         const backendHost = host.replace("-5173.", "-8080.");
         return `wss://${backendHost}/api/ws/game`;
     }
-    
-    // 2. If running on Render live production
     if (host.includes("onrender.com")) {
         return `wss://digimon-backend-774d.onrender.com/api/ws/game`;
     }
-    
-    // 3. Localhost fallback
     return "ws://localhost:8080/api/ws/game";
 };
 
@@ -29,7 +23,7 @@ const websocketURL = getWebsocketURL();
 
 type UseGameWebSocketProps = {
     clearAttackAnimation: (() => void) | null;
-    restartAttackAnimation: (effect?: boolean) => void; // prop for this and useDropZone
+    restartAttackAnimation: (effect?: boolean) => void;
 };
 
 type UseGameWebSocketReturn = {
@@ -40,25 +34,18 @@ function getValidOffset(fieldNumber: number, currentOffset: number) {
     const MAX_OFFSET = 8;
     const FIELDS_VISIBLE = 8;
 
-    // If already visible, keep the current offset
     if (fieldNumber >= currentOffset + 1 && fieldNumber <= currentOffset + FIELDS_VISIBLE) return currentOffset;
 
     let newOffset;
-
     if (fieldNumber > currentOffset + FIELDS_VISIBLE) newOffset = fieldNumber - FIELDS_VISIBLE;
     else newOffset = fieldNumber - 1;
 
-    // Clamp between 0 and MAX_OFFSET
     if (newOffset > MAX_OFFSET) newOffset = MAX_OFFSET;
     if (newOffset < 0) newOffset = 0;
 
     return newOffset;
 }
 
-/**
- * Handling of all game-related incoming websocket messages.
- * Needs to be instantiated in the GamePage component. Use the returned SendMessage function to send messages to the server.
- */
 export default function useGameWebSocket(props: UseGameWebSocketProps): UseGameWebSocketReturn {
     const { clearAttackAnimation, restartAttackAnimation } = props;
 
@@ -106,7 +93,12 @@ export default function useGameWebSocket(props: UseGameWebSocketProps): UseGameW
     const setFieldOffset = useGameUIStates((state) => state.setFieldOffset);
     const setOpponentFieldOffset = useGameUIStates((state) => state.setOpponentFieldOffset);
 
-    const opponentName = gameId.split("‗").filter((username) => username !== user)[0];
+    // Determines spectator perspective mapping (Views from Player 1's side)
+    const p1 = gameId.split("‗")[0];
+    const p2 = gameId.split("‗")[1];
+    const isSpectator = user !== p1 && user !== p2;
+    const opponentName = isSpectator ? p2 : (p1 === user ? p2 : p1);
+    const myName = isSpectator ? p1 : user;
 
     const playCoinFlipSfx = useSound((state) => state.playCoinFlipSfx);
     const playButtonClickSfx = useSound((state) => state.playButtonClickSfx);
@@ -147,7 +139,7 @@ export default function useGameWebSocket(props: UseGameWebSocketProps): UseGameW
 
             if (event.data.startsWith("[DISTRIBUTE_CARDS]:")) {
                 const gameStateJson = event.data.substring("[DISTRIBUTE_CARDS]:".length);
-                distributeCards(user, gameStateJson, playDrawCardSfx);
+                distributeCards(myName, gameStateJson, playDrawCardSfx);
                 setOpenedCardDialog(false);
                 return;
             }
@@ -155,7 +147,10 @@ export default function useGameWebSocket(props: UseGameWebSocketProps): UseGameW
             if (event.data.startsWith("[PLAYER_INFO]:")) {
                 const playersJson = event.data.substring("[PLAYER_INFO]:".length);
                 const players: Player[] = JSON.parse(playersJson);
-                setPlayers(players[0], players[1]);
+                // Assign mapping based on spectator's perspective
+                const firstPlayer = isSpectator ? players.find(p => p.username === p1) : players[0];
+                const secondPlayer = isSpectator ? players.find(p => p.username === p2) : players[1];
+                if (firstPlayer && secondPlayer) setPlayers(firstPlayer, secondPlayer);
             }
 
             if (event.data.startsWith("[SET_BOOT_STAGE]:")) {
@@ -175,12 +170,13 @@ export default function useGameWebSocket(props: UseGameWebSocketProps): UseGameW
 
             if (event.data.startsWith("[STARTING_PLAYER]")) {
                 const firstPlayer = event.data.substring("[STARTING_PLAYER]≔".length);
-
                 setStartingPlayer(firstPlayer);
                 setBootStage(BootStage.SHOW_STARTING_PLAYER);
                 isRematch ? playRematchSfx() : playCoinFlipSfx();
-                if (firstPlayer === user) setUsernameTurn(user);
+                
+                if (firstPlayer === myName) setUsernameTurn(myName);
                 else setUsernameTurn(opponentName);
+                
                 setMessages(event.data);
                 return;
             }
@@ -207,7 +203,6 @@ export default function useGameWebSocket(props: UseGameWebSocketProps): UseGameW
 
             if (event.data.startsWith("[TILT_CARD]:")) {
                 const parts = event.data.substring("[TILT_CARD]:".length).split(":");
-
                 const cardId = parts?.[0];
                 const location = parts?.[1];
                 if (cardId && location) tiltCard(cardId, location, playSuspendSfx, playUnsuspendSfx);
@@ -216,7 +211,6 @@ export default function useGameWebSocket(props: UseGameWebSocketProps): UseGameW
 
             if (event.data.startsWith("[FLIP_CARD]:")) {
                 const parts = event.data.substring("[FLIP_CARD]:".length).split(":");
-
                 const cardId = parts?.[0];
                 const location = parts?.[1];
                 if (cardId && location) flipCard(cardId, location);
@@ -239,7 +233,9 @@ export default function useGameWebSocket(props: UseGameWebSocketProps): UseGameW
 
             if (event.data.startsWith("[UPDATE_MEMORY]:")) {
                 const newMemory = event.data.substring("[UPDATE_MEMORY]:".length);
-                setMemory(parseInt(newMemory));
+                // If spectator, we invert memory so it's accurate to Player1's view
+                const memoryValue = parseInt(newMemory);
+                setMemory(isSpectator ? -memoryValue : memoryValue);
                 return;
             }
 
@@ -297,7 +293,6 @@ export default function useGameWebSocket(props: UseGameWebSocketProps): UseGameW
                 if (parts.length < 2) return;
                 const id = parts[0];
                 const tokenName = parts[1];
-                // const position = parts[2];
                 const token = findTokenByName(tokenName);
                 if (token) createToken(token, SIDE.OPPONENT, id);
                 return;
@@ -312,7 +307,6 @@ export default function useGameWebSocket(props: UseGameWebSocketProps): UseGameW
                     const modifiers: CardModifiers = JSON.parse(parts.slice(2).join(":"));
                     setModifiers(id, location, modifiers);
                 } catch (e) {
-                    // Handle JSON parse errors gracefully
                     console.warn("Failed to parse modifiers:", parts.slice(2).join(":"));
                 }
                 return;
@@ -320,50 +314,17 @@ export default function useGameWebSocket(props: UseGameWebSocketProps): UseGameW
 
             if (event.data.includes("SFX")) {
                 switch (event.data) {
-                    case "[REVEAL_SFX]": {
-                        playRevealCardSfx();
-                        break;
-                    }
-                    case "[SECURITY_REVEAL_SFX]": {
-                        playSecurityRevealSfx();
-                        break;
-                    }
-                    case "[PLACE_CARD_SFX]": {
-                        playOpponentPlaceCardSfx();
-                        break;
-                    }
-                    case "[DRAW_CARD_SFX]": {
-                        playDrawCardSfx();
-                        break;
-                    }
-                    case "[SUSPEND_CARD_SFX]": {
-                        playSuspendSfx();
-                        break;
-                    }
-                    case "[UNSUSPEND_CARD_SFX]": {
-                        playUnsuspendSfx();
-                        break;
-                    }
-                    case "[BUTTON_CLICK_SFX]": {
-                        playButtonClickSfx();
-                        break;
-                    }
-                    case "[TRASH_CARD_SFX]": {
-                        playTrashCardSfx();
-                        break;
-                    }
-                    case "[SHUFFLE_DECK_SFX]": {
-                        playShuffleDeckSfx();
-                        break;
-                    }
-                    case "[NEXT_PHASE_SFX]": {
-                        playNextPhaseSfx();
-                        break;
-                    }
-                    case "[PASS_TURN_SFX]": {
-                        playPassTurnSfx();
-                        break;
-                    }
+                    case "[REVEAL_SFX]": playRevealCardSfx(); break;
+                    case "[SECURITY_REVEAL_SFX]": playSecurityRevealSfx(); break;
+                    case "[PLACE_CARD_SFX]": playOpponentPlaceCardSfx(); break;
+                    case "[DRAW_CARD_SFX]": playDrawCardSfx(); break;
+                    case "[SUSPEND_CARD_SFX]": playSuspendSfx(); break;
+                    case "[UNSUSPEND_CARD_SFX]": playUnsuspendSfx(); break;
+                    case "[BUTTON_CLICK_SFX]": playButtonClickSfx(); break;
+                    case "[TRASH_CARD_SFX]": playTrashCardSfx(); break;
+                    case "[SHUFFLE_DECK_SFX]": playShuffleDeckSfx(); break;
+                    case "[NEXT_PHASE_SFX]": playNextPhaseSfx(); break;
+                    case "[PASS_TURN_SFX]": playPassTurnSfx(); break;
                 }
             }
 
@@ -400,7 +361,7 @@ export default function useGameWebSocket(props: UseGameWebSocketProps): UseGameW
                     break;
                 }
                 case "[UPDATE_PHASE]": {
-                    if (phase === Phase.MAIN) setUsernameTurn(user); // opponent sent phase_update in main -> passed turn
+                    if (phase === Phase.MAIN) setUsernameTurn(myName);
                     progressToNextPhase();
                     break;
                 }

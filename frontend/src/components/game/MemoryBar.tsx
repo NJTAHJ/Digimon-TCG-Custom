@@ -7,10 +7,12 @@ import { useGeneralStates } from "../../hooks/useGeneralStates.ts";
 export default function MemoryBar({ wsUtils }: { wsUtils?: WSUtils }) {
     const myMemory = useGameBoardStates((state) => state.myMemory);
     const setMemory = useGameBoardStates((state) => state.setMemory);
+    const isSpectator = wsUtils?.matchInfo?.isSpectator;
 
     const playButtonClickSfx = useSound((state) => state.playButtonClickSfx);
 
     function handleClick(memory: number) {
+        if (isSpectator) return;
         setMemory(memory);
         playButtonClickSfx();
         wsUtils?.sendChatMessage(`[FIELD_UPDATE]≔【MEMORY】﹕${myMemory}±${memory}`);
@@ -23,71 +25,71 @@ export default function MemoryBar({ wsUtils }: { wsUtils?: WSUtils }) {
 
     return (
         <MemoryBarContainer>
-            <BigMemoryButton onClick={() => handleClick(10)} value={10} myMemory={myMemory} fontSize={bigFontSize}>
+            <BigMemoryButton isSpectator={isSpectator} onClick={() => handleClick(10)} value={10} myMemory={myMemory} fontSize={bigFontSize}>
                 <StyledSpanOneBig>10</StyledSpanOneBig>
             </BigMemoryButton>
 
-            <MemoryButton onClick={() => handleClick(9)} value={9} myMemory={myMemory} fontSize={fontSize}>
+            <MemoryButton isSpectator={isSpectator} onClick={() => handleClick(9)} value={9} myMemory={myMemory} fontSize={fontSize}>
                 <StyledSpan>9</StyledSpan>
             </MemoryButton>
-            <MemoryButton onClick={() => handleClick(8)} value={8} myMemory={myMemory} fontSize={fontSize}>
+            <MemoryButton isSpectator={isSpectator} onClick={() => handleClick(8)} value={8} myMemory={myMemory} fontSize={fontSize}>
                 <StyledSpan>8</StyledSpan>
             </MemoryButton>
-            <MemoryButton onClick={() => handleClick(7)} value={7} myMemory={myMemory} fontSize={fontSize}>
+            <MemoryButton isSpectator={isSpectator} onClick={() => handleClick(7)} value={7} myMemory={myMemory} fontSize={fontSize}>
                 <StyledSpan>7</StyledSpan>
             </MemoryButton>
-            <MemoryButton onClick={() => handleClick(6)} value={6} myMemory={myMemory} fontSize={fontSize}>
+            <MemoryButton isSpectator={isSpectator} onClick={() => handleClick(6)} value={6} myMemory={myMemory} fontSize={fontSize}>
                 <StyledSpan>6</StyledSpan>
             </MemoryButton>
-            <MemoryButton onClick={() => handleClick(5)} value={5} myMemory={myMemory} fontSize={fontSize}>
+            <MemoryButton isSpectator={isSpectator} onClick={() => handleClick(5)} value={5} myMemory={myMemory} fontSize={fontSize}>
                 <StyledSpan>5</StyledSpan>
             </MemoryButton>
-            <MemoryButton onClick={() => handleClick(4)} value={4} myMemory={myMemory} fontSize={fontSize}>
+            <MemoryButton isSpectator={isSpectator} onClick={() => handleClick(4)} value={4} myMemory={myMemory} fontSize={fontSize}>
                 <StyledSpan>4</StyledSpan>
             </MemoryButton>
-            <MemoryButton onClick={() => handleClick(3)} value={3} myMemory={myMemory} fontSize={fontSize}>
+            <MemoryButton isSpectator={isSpectator} onClick={() => handleClick(3)} value={3} myMemory={myMemory} fontSize={fontSize}>
                 <StyledSpan>3</StyledSpan>
             </MemoryButton>
-            <MemoryButton onClick={() => handleClick(2)} value={2} myMemory={myMemory} fontSize={fontSize}>
+            <MemoryButton isSpectator={isSpectator} onClick={() => handleClick(2)} value={2} myMemory={myMemory} fontSize={fontSize}>
                 <StyledSpan>2</StyledSpan>
             </MemoryButton>
-            <MemoryButton onClick={() => handleClick(1)} value={1} myMemory={myMemory} fontSize={fontSize}>
+            <MemoryButton isSpectator={isSpectator} onClick={() => handleClick(1)} value={1} myMemory={myMemory} fontSize={fontSize}>
                 <StyledSpanOne>1</StyledSpanOne>
             </MemoryButton>
 
-            <BigMemoryButton onClick={() => handleClick(0)} value={0} myMemory={myMemory} fontSize={bigFontSize}>
+            <BigMemoryButton isSpectator={isSpectator} onClick={() => handleClick(0)} value={0} myMemory={myMemory} fontSize={bigFontSize}>
                 <ZeroSpan>0</ZeroSpan>
             </BigMemoryButton>
 
-            <MemoryButton onClick={() => handleClick(-1)} value={-1} myMemory={myMemory} fontSize={fontSize}>
+            <MemoryButton isSpectator={isSpectator} onClick={() => handleClick(-1)} value={-1} myMemory={myMemory} fontSize={fontSize}>
                 <StyledSpanOne>1</StyledSpanOne>
             </MemoryButton>
-            <MemoryButton onClick={() => handleClick(-2)} value={-2} myMemory={myMemory} fontSize={fontSize}>
+            <MemoryButton isSpectator={isSpectator} onClick={() => handleClick(-2)} value={-2} myMemory={myMemory} fontSize={fontSize}>
                 <StyledSpan>2</StyledSpan>
             </MemoryButton>
-            <MemoryButton onClick={() => handleClick(-3)} value={-3} myMemory={myMemory} fontSize={fontSize}>
+            <MemoryButton isSpectator={isSpectator} onClick={() => handleClick(-3)} value={-3} myMemory={myMemory} fontSize={fontSize}>
                 <StyledSpan>3</StyledSpan>
             </MemoryButton>
-            <MemoryButton onClick={() => handleClick(-4)} value={-4} myMemory={myMemory} fontSize={fontSize}>
+            <MemoryButton isSpectator={isSpectator} onClick={() => handleClick(-4)} value={-4} myMemory={myMemory} fontSize={fontSize}>
                 <StyledSpan>4</StyledSpan>
             </MemoryButton>
-            <MemoryButton onClick={() => handleClick(-5)} value={-5} myMemory={myMemory} fontSize={fontSize}>
+            <MemoryButton isSpectator={isSpectator} onClick={() => handleClick(-5)} value={-5} myMemory={myMemory} fontSize={fontSize}>
                 <StyledSpan>5</StyledSpan>
             </MemoryButton>
-            <MemoryButton onClick={() => handleClick(-6)} value={-6} myMemory={myMemory} fontSize={fontSize}>
+            <MemoryButton isSpectator={isSpectator} onClick={() => handleClick(-6)} value={-6} myMemory={myMemory} fontSize={fontSize}>
                 <StyledSpan>6</StyledSpan>
             </MemoryButton>
-            <MemoryButton onClick={() => handleClick(-7)} value={-7} myMemory={myMemory} fontSize={fontSize}>
+            <MemoryButton isSpectator={isSpectator} onClick={() => handleClick(-7)} value={-7} myMemory={myMemory} fontSize={fontSize}>
                 <StyledSpan>7</StyledSpan>
             </MemoryButton>
-            <MemoryButton onClick={() => handleClick(-8)} value={-8} myMemory={myMemory} fontSize={fontSize}>
+            <MemoryButton isSpectator={isSpectator} onClick={() => handleClick(-8)} value={-8} myMemory={myMemory} fontSize={fontSize}>
                 <StyledSpan>8</StyledSpan>
             </MemoryButton>
-            <MemoryButton onClick={() => handleClick(-9)} value={-9} myMemory={myMemory} fontSize={fontSize}>
+            <MemoryButton isSpectator={isSpectator} onClick={() => handleClick(-9)} value={-9} myMemory={myMemory} fontSize={fontSize}>
                 <StyledSpan>9</StyledSpan>
             </MemoryButton>
 
-            <BigMemoryButton onClick={() => handleClick(-10)} value={-10} myMemory={myMemory} fontSize={bigFontSize}>
+            <BigMemoryButton isSpectator={isSpectator} onClick={() => handleClick(-10)} value={-10} myMemory={myMemory} fontSize={bigFontSize}>
                 <StyledSpanOneBig>10</StyledSpanOneBig>
             </BigMemoryButton>
         </MemoryBarContainer>
@@ -100,18 +102,19 @@ const MemoryBarContainer = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
-    // match BoardLayout Element of GamePage.tsx:
-    grid-column: 5 / 29; // of 35
-    grid-row: 10 / 12; // of 14
+    grid-column: 5 / 29;
+    grid-row: 10 / 12;
     margin-left: 2.25%;
 `;
 
-const MemoryButton = styled.button<{ myMemory: number; value: number; fontSize: number }>`
+const MemoryButton = styled.button<{ myMemory: number; value: number; fontSize: number; isSpectator?: boolean }>`
     width: 3.75%;
     height: 43%;
     padding: 0;
     transition: all 0.2s ease;
     z-index: 200;
+    pointer-events: ${({ isSpectator }) => (isSpectator ? "none" : "auto")};
+    cursor: ${({ isSpectator }) => (isSpectator ? "default" : "pointer")};
 
     display: flex;
     justify-content: center;
@@ -149,107 +152,48 @@ const BigMemoryButton = styled(MemoryButton)`
 const ZeroSpan = styled.span`
     font-weight: bold;
     transform: translate(8%, 3%) skewX(8.5deg);
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
     user-select: none;
 `;
 
 const StyledSpanOne = styled.span`
     transform: translate(-23%, 3.75%) skewX(8.5deg);
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
     user-select: none;
 `;
 
 const StyledSpanOneBig = styled.span`
     transform: translate(-12%, 3.25%) skewX(8.5deg);
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
     user-select: none;
 `;
 
 const StyledSpan = styled.span`
     transform: translate(5%, 5%) skewX(7.8deg);
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
     user-select: none;
 `;
 
 function getColor(value: number, myMemory: number) {
-    if (value > 0) {
-        if (value <= myMemory) return "rgb(0,160,255)";
-        else return "rgb(189,189,189)";
-    }
-
-    if (value === 0) {
-        if (value === myMemory) return "rgb(161,74,255)";
-        else return "rgb(189,189,189)";
-    }
-
-    if (value < 0) {
-        if (value >= myMemory) return "rgb(255,94,112)";
-        else return "rgb(189,189,189)";
-    }
+    if (value > 0) return value <= myMemory ? "rgb(0,160,255)" : "rgb(189,189,189)";
+    if (value === 0) return value === myMemory ? "rgb(161,74,255)" : "rgb(189,189,189)";
+    return value >= myMemory ? "rgb(255,94,112)" : "rgb(189,189,189)";
 }
 
 function getBorder(value: number, myMemory: number, hover?: boolean) {
     const borderConfig = "1px solid ";
     const borderConfigSelected = hover ? borderConfig : "2px solid ";
-
-    if (value > 0) {
-        if (value <= myMemory) return borderConfigSelected + "rgba(29,159,221,0.9)";
-        else return borderConfig + "rgba(29,159,221,0.4)";
-    }
-
-    if (value === 0) {
-        if (value === myMemory) return borderConfigSelected + "rgba(191,159,255,0.8)";
-        else return borderConfig + "rgba(191,159,255,0.3)";
-    }
-
-    if (value < 0) {
-        if (value >= myMemory) return borderConfigSelected + "rgba(255,81,118,0.8)";
-        else return borderConfig + "rgba(255,81,118,0.3)";
-    }
+    if (value > 0) return value <= myMemory ? borderConfigSelected + "rgba(29,159,221,0.9)" : borderConfig + "rgba(29,159,221,0.4)";
+    if (value === 0) return value === myMemory ? borderConfigSelected + "rgba(191,159,255,0.8)" : borderConfig + "rgba(191,159,255,0.3)";
+    return value >= myMemory ? borderConfigSelected + "rgba(255,81,118,0.8)" : borderConfig + "rgba(255,81,118,0.3)";
 }
 
 function getDropShadow(value: number, myMemory: number) {
     const shadowConfig = "0 0 2px ";
-
-    if (value > 0) {
-        if (value <= myMemory) return shadowConfig + "rgba(29,159,221,0.6)";
-        else return shadowConfig + "rgba(29,159,221,0.15)";
-    }
-
-    if (value === 0) {
-        if (value === myMemory) return shadowConfig + "rgba(95,54,138,0.6)";
-        else return shadowConfig + "rgba(95,54,138,0.6)";
-    }
-
-    if (value < 0) {
-        if (value >= myMemory) return shadowConfig + "rgba(255,81,118,0.6)";
-        else return shadowConfig + "rgba(255,81,118,0.15)";
-    }
+    if (value > 0) return value <= myMemory ? shadowConfig + "rgba(29,159,221,0.6)" : shadowConfig + "rgba(29,159,221,0.15)";
+    if (value === 0) return shadowConfig + (value === myMemory ? "rgba(95,54,138,0.6)" : "rgba(95,54,138,0.6)");
+    return value >= myMemory ? shadowConfig + "rgba(255,81,118,0.6)" : shadowConfig + "rgba(255,81,118,0.15)";
 }
 
 function getBoxShadow(value: number, myMemory: number, hover?: boolean) {
     const shadowConfig = hover ? "0 0 7px 3px " : "1px 2px 5px 1px ";
-
-    if (value > 0) {
-        if (value <= myMemory) return shadowConfig + "rgba(29,159,221,1)";
-        else return shadowConfig + "rgba(29,159,221,0.5)";
-    }
-
-    if (value === 0) {
-        if (value === myMemory) return shadowConfig + "rgba(255,255,255,0.6)";
-        else return shadowConfig + "rgba(255,255,255,0.25)";
-    }
-
-    if (value < 0) {
-        if (value >= myMemory) return shadowConfig + "rgba(255,81,118,0.8)";
-        else return shadowConfig + "rgba(255,81,118,0.4)";
-    }
+    if (value > 0) return value <= myMemory ? shadowConfig + "rgba(29,159,221,1)" : shadowConfig + "rgba(29,159,221,0.5)";
+    if (value === 0) return value === myMemory ? shadowConfig + "rgba(255,255,255,0.6)" : shadowConfig + "rgba(255,255,255,0.25)";
+    return value >= myMemory ? shadowConfig + "rgba(255,81,118,0.8)" : shadowConfig + "rgba(255,81,118,0.4)";
 }

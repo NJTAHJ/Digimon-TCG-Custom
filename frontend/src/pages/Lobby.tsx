@@ -41,6 +41,7 @@ type LobbyPlayer = {
     name: string;
     avatarName: string;
     ready: boolean;
+    role?: string;
 };
 
 type Room = {
@@ -53,22 +54,15 @@ type Room = {
 };
 
 export default function Lobby() {
-    // Smart dynamic routing function for the lobby WebSocket connection
     const getWebsocketURL = () => {
         const host = window.location.host;
-        
-        // 1. If running inside GitHub Codespaces
         if (host.includes("github.dev")) {
             const backendHost = host.replace("-5173.", "-8080.");
             return `wss://${backendHost}/api/ws/lobby`;
         }
-        
-        // 2. If running on Render live production
         if (host.includes("onrender.com")) {
             return `wss://digimon-backend-774d.onrender.com/api/ws/lobby`;
         }
-        
-        // 3. Localhost fallback
         return "ws://localhost:8080/api/ws/lobby";
     };
 
@@ -113,7 +107,7 @@ export default function Lobby() {
     const [newRoomPassword, setNewRoomPassword] = useState<string>("");
     const [restrictionsApplied, setRestrictionsApplied] = useState<boolean>(false);
 
-    const [roomToJoinId, setRoomToJoinId] = useState<string>(""); // for password protected rooms
+    const [roomToJoinId, setRoomToJoinId] = useState<string>("");
     const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState<boolean>(false);
     const [password, setPassword] = useState<string>("");
     const [isWrongPassword, setIsWrongPassword] = useState<boolean>(false);
@@ -134,8 +128,7 @@ export default function Lobby() {
 
     function setIsLoadingWithDebounce() {
         setIsLoading(true);
-
-        const timer = setTimeout(() => setIsLoading(false), 5000); // reset loading state after 5 seconds
+        const timer = setTimeout(() => setIsLoading(false), 5000);
         return () => clearTimeout(timer);
     }
 
@@ -194,7 +187,7 @@ export default function Lobby() {
                     setJoinedRoom(null);
                     setPrivateMessages([]);
                     setIsLoading(false);
-                    playJoinSfx(); // new sound?
+                    playJoinSfx();
                 }
 
                 if (event.data === "[KICKED]") {
@@ -213,7 +206,7 @@ export default function Lobby() {
                 }
 
                 if (event.data.startsWith("[COMPUTE_GAME]:")) {
-                    localStorage.setItem("isReported", JSON.stringify(false)); // see ReportButton.tsx
+                    localStorage.setItem("isReported", JSON.stringify(false));
                     localStorage.removeItem("boardStore");
                     const gameId = event.data.substring("[COMPUTE_GAME]:".length);
                     startGameSequence(gameId);
@@ -222,7 +215,6 @@ export default function Lobby() {
                 if (event.data.startsWith("[RECONNECT_ENABLED]:")) {
                     const matchingRoomId = event.data.substring("[RECONNECT_ENABLED]:".length);
                     setIsRejoinable(matchingRoomId === gameId);
-                    // gameId could be set to older matching room id here, but not sure if this makes sense
                 }
 
                 if (event.data === "[RECONNECT_DISABLED]") {
@@ -257,17 +249,17 @@ export default function Lobby() {
                 }
             },
         },
-        !isFetchingIsBanned && !isBanned // connect only when not banned
+        !isFetchingIsBanned && !isBanned
     );
 
     function handleDeckChange(event: ChangeEvent<HTMLSelectElement>) {
-        setActiveDeck(String(event.target.value)); // TODO: check if backend checks validity on each change:
+        setActiveDeck(String(event.target.value));
     }
 
     function handleCreateRoom() {
         setIsLoadingWithDebounce();
         cancelQuickPlayQueue();
-        const sanitizedNewRoomName = newRoomName.trim().replace(":", "∶"); // remove colons to avoid issues with message parsing
+        const sanitizedNewRoomName = newRoomName.trim().replace(":", "∶");
         websocket.sendMessage(
             "/createRoom:" + sanitizedNewRoomName + ":" + newRoomPassword + ":" + restrictionsApplied
         );
@@ -291,6 +283,12 @@ export default function Lobby() {
         websocket.sendMessage("/toggleReady:" + joinedRoom?.id);
     }
 
+    function handleToggleRole(userName: string, currentRole: string) {
+        setIsLoadingWithDebounce();
+        const newRole = currentRole === "PLAYER" ? "SPECTATOR" : "PLAYER";
+        websocket.sendMessage("/setRole:" + joinedRoom?.id + ":" + userName + ":" + newRole);
+    }
+
     function handleLeaveRoom() {
         setIsLoadingWithDebounce();
         websocket.sendMessage("/leave:" + joinedRoom?.id + ":" + user + ":true");
@@ -305,7 +303,9 @@ export default function Lobby() {
     function handleStartGame() {
         setIsLoadingWithDebounce();
         cancelQuickPlayQueue();
-        const newGameID = user + "‗" + joinedRoom?.players.find((p) => p.name !== user)?.name;
+        const activePlayers = joinedRoom?.players.filter(p => p.role === "PLAYER") || [];
+        if (activePlayers.length !== 2) return;
+        const newGameID = activePlayers[0].name + "‗" + activePlayers[1].name;
         websocket.sendMessage("/startGame:" + joinedRoom?.id + ":" + newGameID);
     }
 
@@ -313,7 +313,7 @@ export default function Lobby() {
         playCountdownSfx();
         setShowCountdown(true);
         const timer = setTimeout(() => {
-            setGameId(gameId); // maybe use the lobby id (at least when displayName != accountName)?
+            setGameId(gameId);
             setIsRematch(false);
             clearBoard();
             setIsLoading(false);
@@ -356,13 +356,14 @@ export default function Lobby() {
     }, [joinedRoom, user, websocket]);
 
     const meInRoom = joinedRoom?.players.find((p) => p.name === user);
-    // Todo: add restriction to room creation and disable here if it matches
+    const activePlayersCount = joinedRoom?.players.filter((p) => p.role === "PLAYER").length;
+
     const startGameDisabled =
         activeDeckReadyState === DeckReadySate.NOT_FULL ||
         (!!joinedRoom &&
             (isLoading ||
-                !!joinedRoom.players.find((p) => !p.ready) ||
-                joinedRoom.players.length < 2 ||
+                !!joinedRoom.players.find((p) => !p.ready && p.role === "PLAYER") ||
+                activePlayersCount !== 2 ||
                 (joinedRoom.restrictionsApplied && activeDeckReadyState === DeckReadySate.VIOLATES_RESTRICTIONS)));
 
     const isMobile = useMediaQuery("(max-width:499px)");
@@ -418,8 +419,6 @@ export default function Lobby() {
             <Header>
                 <SoundBar opened />
 
-                {/*TODO: Add own name plate here*/}
-
                 {isRejoinable && <Button onClick={handleReconnect}>RECONNECT</Button>}
 
                 <OnlineUsers>
@@ -465,7 +464,6 @@ export default function Lobby() {
                                     </Button>
                                 ) : (
                                     <QuickPlayButton
-                                        // Todo: incorporate restriction check to disabled
                                         disabled={
                                             activeDeckReadyState === DeckReadySate.NOT_FULL ||
                                             (joinedRoom.restrictionsApplied &&
@@ -497,7 +495,6 @@ export default function Lobby() {
 
                                         return (
                                             <Tile key={player.name}>
-                                                {/*TODO: Replace name and avatar by name plates later*/}
                                                 <img
                                                     alt={player.name + "img"}
                                                     width={96}
@@ -506,7 +503,16 @@ export default function Lobby() {
                                                     src={profilePicture(player.avatarName)}
                                                 />
 
-                                                <StyledSpan>{player.name}</StyledSpan>
+                                                <StyledSpan style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 4 }}>
+                                                    {player.name}
+                                                    {amIHost ? (
+                                                        <Button style={{fontSize: 12, padding: '2px 8px', height: 'auto', minWidth: 'unset'}} onClick={() => handleToggleRole(player.name, player.role || "PLAYER")}>
+                                                            {player.role || "PLAYER"}
+                                                        </Button>
+                                                    ) : (
+                                                        <span style={{fontSize: 14, color: 'gray'}}>{player.role || "PLAYER"}</span>
+                                                    )}
+                                                </StyledSpan>
 
                                                 {host ? (
                                                     <img
@@ -618,7 +624,6 @@ export default function Lobby() {
                         )}
 
                         <Card style={isMobile ? { order: 99, width: "100%" } : {}}>
-                            {/*<CardTitle>Deck Selection</CardTitle>*/}
                             <Select
                                 value={activeDeckId}
                                 onChange={handleDeckChange}
@@ -645,7 +650,6 @@ export default function Lobby() {
                                     alignItems: "center",
                                 }}
                             >
-                                {/*<CardTitle>Room Setup</CardTitle>*/}
                                 <Input
                                     value={newRoomName}
                                     onChange={(e) => setNewRoomName(e.target.value)}
@@ -757,7 +761,6 @@ const LeftColumn = styled.div`
 
 const Card = styled.div`
     padding: 1rem;
-
     position: relative;
     color: ghostwhite;
     background: rgba(12, 21, 16, 0.25);
@@ -975,8 +978,6 @@ const Tile = styled.div`
     transition: background-color 0.3s ease;
     padding-left: 4px;
 
-    @media (max-width: 600px) and (orientation: portrait), (max-height: 499px) {
-    }
     @media (max-width: 800px) and (orientation: landscape) {
         grid-template-columns: 2fr 2fr 0.5fr 0.5fr 200px;
     }

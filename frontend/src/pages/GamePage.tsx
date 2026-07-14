@@ -34,12 +34,8 @@ import PhaseIndicator from "../components/game/PhaseIndicator.tsx";
 import SettingsMenuButton from "../components/game/SettingsMenuButton.tsx";
 import { DetailsView, useSettingStates } from "../hooks/useSettingStates.ts";
 
-/**
- * To be used in Game components to send messages to multiplayer opponent through WebSocket
- * It summarizes the most common messages that are sent to the opponent
- */
 export type WSUtils = {
-    matchInfo: { gameId: string; user: string; opponentName: string };
+    matchInfo: { gameId: string; user: string; opponentName: string; isSpectator: boolean };
     sendMessage: SendMessage;
     sendPhaseUpdate: () => void;
     sendMoveCard: (cardId: string, from: string, to: string) => void;
@@ -55,7 +51,12 @@ export default function GamePage() {
     const user = useGeneralStates((state) => state.user);
 
     const gameId = useGameBoardStates((state) => state.gameId);
-    const opponentName = gameId.split("‗").filter((username) => username !== user)[0];
+    
+    // Spectator logic calculations
+    const p1 = gameId.split("‗")[0];
+    const p2 = gameId.split("‗")[1];
+    const isSpectator = user !== p1 && user !== p2;
+    const opponentName = isSpectator ? p2 : (p1 === user ? p2 : p1);
 
     const playAttackSfx = useSound((state) => state.playAttackSfx);
     const playEffectAttackSfx = useSound((state) => state.playEffectAttackSfx);
@@ -73,14 +74,12 @@ export default function GamePage() {
     const details = useSettingStates((state) => state.details);
 
     const { show: showDetailsImageMenu } = useContextMenu({ id: "detailsImageMenu" });
-    // const [isCameraTilted, setIsCameraTilted] = useState<boolean>(false);
 
-    const [clearAttackAnimation, setClearAttackAnimation] = useState<(() => void) | null>(null); // to clear the previous timeRef
-    const [phaseLoading, setPhaseLoading] = useState(false); // helps prevent unexpected multiple phase changes
+    const [clearAttackAnimation, setClearAttackAnimation] = useState<(() => void) | null>(null);
+    const [phaseLoading, setPhaseLoading] = useState(false);
 
     const timeoutRef = useRef<number | null>(null);
 
-    // This reliably aborts and restarts attack animation whenever it is triggered
     const restartAttackAnimation = useCallback(
         (effect?: boolean) => {
             if (effect) playEffectAttackSfx();
@@ -120,7 +119,6 @@ export default function GamePage() {
         clearAttackAnimation,
     });
 
-    // Handle react-dnd drop events
     useLayoutEffect(() => {
         const handleReactDndDrop = (event: CustomEvent) => {
             const { item, targetId } = event.detail;
@@ -138,11 +136,12 @@ export default function GamePage() {
     }, [createDropHandler]);
 
     function sendPhaseUpdate() {
+        if (isSpectator) return;
         sendMessage(`${gameId}:/updatePhase`);
     }
 
     function nextPhase() {
-        if (phaseLoading) return;
+        if (phaseLoading || isSpectator) return;
         setPhaseLoading(true);
         const timer = setTimeout(() => {
             setPhase();
@@ -155,6 +154,7 @@ export default function GamePage() {
     }
 
     function sendMoveCard(cardId: string, from: string, to: string) {
+        if (isSpectator) return;
         sendMessage(`${gameId}:/moveCard:${cardId}:${from}:${to}`);
     }
 
@@ -165,12 +165,13 @@ export default function GamePage() {
     }
 
     function sendSfx(sfx: string) {
+        if (isSpectator) return;
         const timeout = setTimeout(() => sendMessage(`${gameId}:/${sfx}`), 10);
         return () => clearTimeout(timeout);
     }
 
     const wsUtils: WSUtils = {
-        matchInfo: { gameId, user, opponentName },
+        matchInfo: { gameId, user, opponentName, isSpectator },
         sendMessage,
         sendMoveCard,
         sendChatMessage,
@@ -179,14 +180,12 @@ export default function GamePage() {
         nextPhase,
     };
 
-    // Layout ##########################################################################################################
     const iconWidth = useGeneralStates((state) => state.cardWidth * 0.45);
     const boardContainerRef = useRef<HTMLDivElement>(null);
     const height = boardContainerRef.current ? Math.max(window.outerHeight - 148, 800) : undefined;
 
     useLayoutEffect(() => window.scrollTo(document.documentElement.scrollWidth - window.innerWidth, 0), []);
 
-    // Determine backend based on touch capability
     const backend = "ontouchstart" in window ? TouchBackend : HTML5Backend;
 
     const gameContent = (
@@ -236,7 +235,7 @@ export default function GamePage() {
     return (
         <Container ref={boardContainerRef}>
             <GameBackground />
-            <ContextMenus wsUtils={wsUtils} />
+            {!isSpectator && <ContextMenus wsUtils={wsUtils} />}
             <AttackArrows />
             <TokenModal wsUtils={wsUtils} />
             <EndModal />
