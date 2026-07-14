@@ -53,10 +53,26 @@ type Room = {
 };
 
 export default function Lobby() {
-    // Smart production-routing for the lobby WebSocket connection
-    const isProduction = import.meta.env.PROD;
-    const wsBase = isProduction ? "wss://digimon-backend-774d.onrender.com" : "";
-    const websocketURL = import.meta.env.VITE_WEBSOCKET_URL || (wsBase + "/api/ws/lobby");
+    // Smart dynamic routing function for the lobby WebSocket connection
+    const getWebsocketURL = () => {
+        const host = window.location.host;
+        
+        // 1. If running inside GitHub Codespaces
+        if (host.includes("github.dev")) {
+            const backendHost = host.replace("-5173.", "-8080.");
+            return `wss://${backendHost}/api/ws/lobby`;
+        }
+        
+        // 2. If running on Render live production
+        if (host.includes("onrender.com")) {
+            return `wss://digimon-backend-774d.onrender.com/api/ws/lobby`;
+        }
+        
+        // 3. Localhost fallback
+        return "ws://localhost:8080/api/ws/lobby";
+    };
+
+    const websocketURL = getWebsocketURL();
 
     const user = useGeneralStates((state) => state.user);
     const setActiveDeck = useGeneralStates((state) => state.setActiveDeck);
