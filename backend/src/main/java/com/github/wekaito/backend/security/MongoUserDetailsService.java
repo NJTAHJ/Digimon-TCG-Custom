@@ -8,7 +8,6 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.WebSocketSession;
@@ -21,6 +20,9 @@ public class MongoUserDetailsService implements UserDetailsService {
 
     private final MongoUserRepository mongoUserRepository;
     private final StarterDeckService starterDeckService;
+    
+    // Injects the central PasswordEncoder bean (BCrypt) configured in SecurityConfig
+    private final PasswordEncoder passwordEncoder;
 
     private static final String[] badWords = {"abuse", "analsex", "ballsack", "bastard", "bestiality", "biatch", "bitch", "blowjob", "fuck", "fuuck", "rape", "whore", "nigger", "nazi", "jews"};
 
@@ -37,9 +39,9 @@ public class MongoUserDetailsService implements UserDetailsService {
                 new UsernameNotFoundException("User " + username + exceptionMessage));
     }
 
+    // Now uses the injected central BCrypt encoder instead of hardcoding Argon2
     private String getEncodedPassword(String password) {
-        PasswordEncoder encoder = new Argon2PasswordEncoder(16, 32, 8, 1 << 16, 4);
-        return encoder.encode(password);
+        return passwordEncoder.encode(password);
     }
 
     public String getUserIdByUsername(String username){
