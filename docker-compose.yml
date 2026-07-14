@@ -44,6 +44,6 @@ services:
     ports:  
       - "5173:5173"
     environment:
-      - WEBSOCKET_URL=wss://digimon-backend.onrender.com/
+      - WEBSOCKET_URL=wss://digimon-backend-774d.onrender.com/
     depends_on:
       - backend
