@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -24,6 +25,9 @@ class MongoUserDetailsServiceTest {
     private MongoUserRepository mongoUserRepository;
 
     @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @Mock
     private StarterDeckService starterDeckService;
 
     @InjectMocks
@@ -31,7 +35,8 @@ class MongoUserDetailsServiceTest {
 
     @BeforeEach
     void setUp() {
-        mongoUserDetailsService = new MongoUserDetailsService(mongoUserRepository, starterDeckService);
+        // Updated to pass the required third mocked parameter (passwordEncoder)
+        mongoUserDetailsService = new MongoUserDetailsService(mongoUserRepository, starterDeckService, passwordEncoder);
         when(mongoUserRepository.findByUsername("testUser1")).thenReturn(Optional.of(new MongoUser("123", "testUser1", "password", "question?", "answer!", "12345", "AncientIrismon", Collections.emptyList(), Role.ROLE_USER)));
     }
 
@@ -59,6 +64,15 @@ class MongoUserDetailsServiceTest {
     }
 
     @Test
+    void testGetUserIdByUsername() {
+        String userId = mongoUserDetailsService.getUserIdByUsername("testUser1");
+        assertThat(userId).isEqualTo("123");
+        assertThrows(UsernameNotFoundException.class, () -> {
+            mongoUserDetailsService.getUserIdByUsername("notExistingUser");
+        });
+    }
+
+    @Test
     void testLoadUserByUsername() {
         // WHEN
         UserDetails userDetails = mongoUserDetailsService.loadUserByUsername("testUser1");
@@ -69,15 +83,6 @@ class MongoUserDetailsServiceTest {
         assertThat(userDetails.getPassword()).isEqualTo("password");
         assertThrows(UsernameNotFoundException.class, () -> {
             mongoUserDetailsService.loadUserByUsername("notExistingUser");
-        });
-    }
-
-    @Test
-    void testGetUserIdByUsername() {
-        String userId = mongoUserDetailsService.getUserIdByUsername("testUser1");
-        assertThat(userId).isEqualTo("123");
-        assertThrows(UsernameNotFoundException.class, () -> {
-            mongoUserDetailsService.getUserIdByUsername("notExistingUser");
         });
     }
 }
