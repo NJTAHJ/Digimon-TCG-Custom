@@ -7,7 +7,25 @@ import { useGeneralStates } from "./useGeneralStates.ts";
 import { useSound } from "./useSound.ts";
 import { useGameUIStates } from "./useGameUIStates.ts";
 
-const websocketURL = import.meta.env.VITE_WEBSOCKET_URL || "/api/ws/game";
+const getWebsocketURL = () => {
+    const host = window.location.host;
+    
+    // 1. If running inside GitHub Codespaces
+    if (host.includes("github.dev")) {
+        const backendHost = host.replace("-5173.", "-8080.");
+        return `wss://${backendHost}/api/ws/game`;
+    }
+    
+    // 2. If running on Render live production
+    if (host.includes("onrender.com")) {
+        return `wss://digimon-backend-774d.onrender.com/api/ws/game`;
+    }
+    
+    // 3. Localhost fallback
+    return "ws://localhost:8080/api/ws/game";
+};
+
+const websocketURL = getWebsocketURL();
 
 type UseGameWebSocketProps = {
     clearAttackAnimation: (() => void) | null;
