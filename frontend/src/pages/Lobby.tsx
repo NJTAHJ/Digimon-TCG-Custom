@@ -53,7 +53,10 @@ type Room = {
 };
 
 export default function Lobby() {
-    const websocketURL = import.meta.env.VITE_WEBSOCKET_URL || "/api/ws/lobby";
+    // Smart production-routing for the lobby WebSocket connection
+    const isProduction = import.meta.env.PROD;
+    const wsBase = isProduction ? "wss://digimon-backend-774d.onrender.com" : "";
+    const websocketURL = import.meta.env.VITE_WEBSOCKET_URL || (wsBase + "/api/ws/lobby");
 
     const user = useGeneralStates((state) => state.user);
     const setActiveDeck = useGeneralStates((state) => state.setActiveDeck);
