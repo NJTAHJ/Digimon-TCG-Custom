@@ -7,7 +7,7 @@ import { useGeneralStates } from "./useGeneralStates.ts";
 import { useSound } from "./useSound.ts";
 import { useGameUIStates } from "./useGameUIStates.ts";
 
-const websocketURL = "wss://zany-space-waddle-v6px665rp9642x679-8080.app.github.dev/api/ws/game";
+const websocketURL = import.meta.env.VITE_WEBSOCKET_URL || "/api/ws/game";
 
 type UseGameWebSocketProps = {
     clearAttackAnimation: (() => void) | null;

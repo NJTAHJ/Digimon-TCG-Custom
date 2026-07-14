@@ -5,6 +5,9 @@ services:
     hostname: mongo
     ports:
       - "27017:27017"
+    volumes:
+      # Maps a persistent local folder in your persistent workspaces directory to keep database data safe across stops
+      - ./mongodb_data:/data/db
 
   mongo-express:
     image: mongo-express
@@ -41,6 +44,6 @@ services:
     ports:  
       - "5173:5173"
     environment:
-      - WEBSOCKET_URL=wss://zany-space-waddle-v6px665rp9642x679-8080.app.github.dev/
+      - WEBSOCKET_URL=wss://digimon-backend.onrender.com/
     depends_on:
       - backend

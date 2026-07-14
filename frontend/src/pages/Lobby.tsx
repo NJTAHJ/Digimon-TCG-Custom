@@ -53,7 +53,7 @@ type Room = {
 };
 
 export default function Lobby() {
-    const websocketURL = "wss://zany-space-waddle-v6px665rp9642x679-8080.app.github.dev/api/ws/lobby";
+    const websocketURL = import.meta.env.VITE_WEBSOCKET_URL || "/api/ws/lobby";
 
     const user = useGeneralStates((state) => state.user);
     const setActiveDeck = useGeneralStates((state) => state.setActiveDeck);

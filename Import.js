@@ -1,61 +1,602 @@
-// 1. Clear existing database entries for these cards to avoid duplicates
-db.card.deleteMany({ 
-  uniqueCardNumber: { 
-    $in: [
-      "BB1-011", "BB1-012", "BB1-027", "BB1-028", "BB1-029", "BB1-031", 
-      "BB1-041", "BB1-043", "BB1-054", "BB1-055", "BB1-057", "BB1-065", 
-      "BB1-066", "BB1-067", "BB1-076", "BB1-077"
-    ] 
-  } 
-});
+// Import.js - MongoDB Shell Card Injection for BB1 (First Batch)
+// Target Database: digiDB | Target Collection: card
 
-// 2. Insert the Champion and Ultimate Digimon
+const targetCards = [
+  "BB1-001", "BB1-002", "BB1-003", "BB1-005", "BB1-007", 
+  "BB1-008", "BB1-012", "BB1-016", "BB1-024", "BB1-025", 
+  "BB1-026", "BB1-027", "BB1-028", "BB1-031", "BB1-032", 
+  "BB1-034", "BB1-035", "BB1-041", "BB1-049", "BB1-054", 
+  "BB1-059", "BB1-070", "BB1-080", "BB1-083", "BB1-084", 
+  "BB1-085", "BB1-086", "BB1-098", "BB1-103", "BB1-104_P1", 
+  "BB1-104_P2"
+];
+
+// Clean up existing duplicates to ensure a clean slate
+db.card.deleteMany({ uniqueCardNumber: { $in: targetCards } });
+
 db.card.insertMany([
+  // ==========================================
+  // LEVEL 7 MEGAS / SPECIAL MECHANICS
+  // ==========================================
   {
-    "uniqueCardNumber": "BB1-011",
-    "name": "GulusGammamon",
-    "imgUrl": "/BB1-011.png",
+    "uniqueCardNumber": "BB1-104_P1",
+    "name": "Omnimon (Standard Art)",
+    "imgUrl": "/BB1-104_P1.webp",
     "cardType": "Digimon",
-    "color": ["Red", "Purple"],
+    "color": ["White", "Blue", "Red"],
+    "attribute": "Vaccine",
+    "cardNumber": "BB1-104",
+    "digivolveConditions": [],
+    "specialDigivolve": "Digivolve: from Lv.6 w/[Nerds] trait: 5 cost",
+    "dnaDigivolve": "[DNA Digivolve] [Red]/[Yellow] Lv.6 + [Blue]/[Green] Lv.6: Cost 0",
+    "stage": "Mega",
+    "digiType": ["Holy Knight", "Nerds", "IADA"],
+    "dp": 15000,
+    "playCost": 15,
+    "level": 7,
+    "mainEffect": "＜Partition {[WarGreymon] & [MetalGarurumon]}＞\n[When Digivolving][When Attacking][Once Per Turn] You may play 1 Level 5 or lower Digimon card with the [Nerds] trait from your hand or trash without paying its memory cost. If DNA digivolving, add 1 to the number of Digimon cards this effect can play.\n[All Turns][Once Per Turn] When any of your Digimon with the [Nerds] trait are played, 1 of your opponent's Digimon gets -5000 DP for each of your Digimon with the [Nerds] trait in play until the end of your opponent's turn.\n[All Turns] While you have [Nathan James] in play, all of your Level 5 or higher Digimon with the [Nerds] trait gain ＜Reboot＞.",
+    "inheritedEffect": null,
+    "aceEffect": null,
+    "burstDigivolve": null,
+    "digiXros": null,
+    "securityEffect": null,
+    "rule": null,
+    "linkDP": null,
+    "linkEffect": null,
+    "linkRequirement": null,
+    "assemblyEffect": null,
+    "restrictions": {
+      "chinese": "Unrestricted",
+      "english": "Unrestricted",
+      "japanese": "Unrestricted",
+      "korean": "Unrestricted"
+    },
+    "illustrator": "Bandai",
+    "_class": "com.github.wekaito.backend.models.Card"
+  },
+  {
+    "uniqueCardNumber": "BB1-104_P2",
+    "name": "Omnimon (Alt Art)",
+    "imgUrl": "/BB1-104_P2.webp",
+    "cardType": "Digimon",
+    "color": ["White", "Blue", "Red"],
+    "attribute": "Vaccine",
+    "cardNumber": "BB1-104",
+    "digivolveConditions": [],
+    "specialDigivolve": "Digivolve: from Lv.6 w/[Nerds] trait: 5 cost",
+    "dnaDigivolve": "[DNA Digivolve] [Red]/[Yellow] Lv.6 + [Blue]/[Green] Lv.6: Cost 0",
+    "stage": "Mega",
+    "digiType": ["Holy Knight", "Nerds", "IADA"],
+    "dp": 15000,
+    "playCost": 15,
+    "level": 7,
+    "mainEffect": "＜Partition {[WarGreymon] & [MetalGarurumon]}＞\n[When Digivolving][When Attacking][Once Per Turn] You may play 1 Level 5 or lower Digimon card with the [Nerds] trait from your hand or trash without paying its memory cost. If DNA digivolving, add 1 to the number of Digimon cards this effect can play.\n[All Turns][Once Per Turn] When any of your Digimon with the [Nerds] trait are played, 1 of your opponent's Digimon gets -5000 DP for each of your Digimon with the [Nerds] trait in play until the end of your opponent's turn.\n[All Turns] While you have [Nathan James] in play, all of your Level 5 or higher Digimon with the [Nerds] trait gain ＜Reboot＞.",
+    "inheritedEffect": null,
+    "aceEffect": null,
+    "burstDigivolve": null,
+    "digiXros": null,
+    "securityEffect": null,
+    "rule": null,
+    "linkDP": null,
+    "linkEffect": null,
+    "linkRequirement": null,
+    "assemblyEffect": null,
+    "restrictions": {
+      "chinese": "Unrestricted",
+      "english": "Unrestricted",
+      "japanese": "Unrestricted",
+      "korean": "Unrestricted"
+    },
+    "illustrator": "Bandai",
+    "_class": "com.github.wekaito.backend.models.Card"
+  },
+  {
+    "uniqueCardNumber": "BB1-103",
+    "name": "TyrantKabuterimon",
+    "imgUrl": "/BB1-103.webp",
+    "cardType": "Digimon",
+    "color": ["Green", "Purple"],
     "attribute": "Virus",
-    "cardNumber": "BB1-011",
+    "cardNumber": "BB1-103",
     "digivolveConditions": [
-      { "color": "Red", "cost": 3, "level": 3 },
-      { "color": "Purple", "cost": 3, "level": 3 }
+      { "color": "Green", "cost": 6, "level": 6 },
+      { "color": "Purple", "cost": 6, "level": 6 }
     ],
-    "specialDigivolve": null,
-    "stage": "Champion",
-    "digiType": ["Dragonkin", "Girlies"],
-    "dp": 5000,
-    "playCost": 5,
-    "level": 4,
-    "mainEffect": "[When Digivolving] By trashing 1 card from your hand, " +
-      "delete 1 of your opponent's Digimon with DP less than or equal " +
-      "to this Digimon's DP.",
-    "inheritedEffect": "[On Deletion] Gain 1 memory.",
+    "specialDigivolve": "Digivolve: from Lv.6 w/[Insectoid] trait with 13000 DP or less: 3 cost",
+    "stage": "Mega",
+    "digiType": ["Insectoid", "Nerds", "Arena"],
+    "dp": 14000,
+    "playCost": 14,
+    "level": 7,
+    "mainEffect": "＜Vortex＞ ＜Piercing＞\n[When Digivolving] Play 1 [Drone] Token (Green/Digimon/Insectoid/2000 DP/this Digimon cannot unsuspend. On Deletion: Suspend 1 of your opponent's Digimon) to your opponent's field suspended. Then, play up to 5 play cost of Digimon cards with the [Nerds], [Arena], or [Insectoid] traits from your trash without paying their memory costs. For each of your opponent's suspended Digimon, increase the total play cost you can play by 2.\n[All Turns] All of your other Digimon with the [Insectoid], [Arena], or [Nerds] trait gain ＜Retaliation＞.\n[All Turns][Once Per Turn] When a Digimon is played, 1 of your other Digimon may battle 1 of your opponent's Digimon.",
+    "inheritedEffect": null,
     "aceEffect": null,
     "burstDigivolve": null,
     "digiXros": null,
     "dnaDigivolve": null,
     "securityEffect": null,
-    "rule": "This card is also treated as having the [Dark Dragon] trait.",
+    "rule": "This card is also treated as having the [Free] trait.",
     "linkDP": null,
     "linkEffect": null,
     "linkRequirement": null,
     "assemblyEffect": null,
-    "restrictions": { 
-      "chinese": "Unrestricted", 
-      "english": "Unrestricted", 
-      "japanese": "Unrestricted", 
-      "korean": "Unrestricted" 
+    "restrictions": {
+      "chinese": "Unrestricted",
+      "english": "Unrestricted",
+      "japanese": "Unrestricted",
+      "korean": "Unrestricted"
     },
-    "illustrator": "Custom BB1 Art",
+    "illustrator": "Bandai",
     "_class": "com.github.wekaito.backend.models.Card"
   },
   {
+    "uniqueCardNumber": "BB1-083",
+    "name": "Boltboutamon",
+    "imgUrl": "/BB1-083.webp",
+    "cardType": "Digimon",
+    "color": ["Purple", "Yellow", "Black"],
+    "attribute": "Virus",
+    "cardNumber": "BB1-083",
+    "digivolveConditions": [
+      { "color": "Purple", "cost": 5, "level": 6 },
+      { "color": "Yellow", "cost": 5, "level": 6 },
+      { "color": "Black", "cost": 5, "level": 6 }
+    ],
+    "specialDigivolve": "Digivolve: from Lv.6 w/[CT] trait: 5 cost",
+    "stage": "Mega",
+    "digiType": ["Wizard", "CT"],
+    "dp": 15000,
+    "playCost": 15,
+    "level": 7,
+    "mainEffect": "＜Alliance＞ ＜Partition {[Ridendo Fusco] & [Phantomon]}＞\n[When Digivolving] For each of this Digimon's digivolution cards, give all of your opponent's Digimon -2000 DP for the turn. Then, you may use 1 Option card with the [CT] trait from your hand or trash without paying its memory cost.\n[All Turns][Once Per Turn] When Digimon are deleted, you may activate 1 [Main] effect on this card's Option side.",
+    "inheritedEffect": null,
+    "aceEffect": null,
+    "burstDigivolve": null,
+    "digiXros": null,
+    "dnaDigivolve": null,
+    "securityEffect": null,
+    "rule": "Curtain Call - Option\nUse: 6 | Purple/Yellow/Black\n＜Use Req. {[CT] trait}＞\n[Main] Play 1 [Stage Hand] Token (Digimon/Lv.4/Purple/4000 DP/＜Guard＞). Then, delete 1 of your opponent's Level 5 or lower Digimon. For each of your [Stage Hand]s in play, increase the maximum level of this effect by 1.",
+    "linkDP": null,
+    "linkEffect": null,
+    "linkRequirement": null,
+    "assemblyEffect": null,
+    "restrictions": {
+      "chinese": "Unrestricted",
+      "english": "Unrestricted",
+      "japanese": "Unrestricted",
+      "korean": "Unrestricted"
+    },
+    "illustrator": "Bandai",
+    "_class": "com.github.wekaito.backend.models.Card"
+  },
+
+  // ==========================================
+  // TAMERS
+  // ==========================================
+  {
+    "uniqueCardNumber": "BB1-084",
+    "name": "Nathan James",
+    "imgUrl": "/BB1-084.webp",
+    "cardType": "Tamer",
+    "color": ["Red", "Blue", "White"],
+    "attribute": null,
+    "cardNumber": "BB1-084",
+    "digivolveConditions": [],
+    "specialDigivolve": null,
+    "stage": null,
+    "digiType": ["Nerds", "IADA"],
+    "dp": null,
+    "playCost": 4,
+    "level": null,
+    "mainEffect": "[Start of Your Turn] If you have a Digimon with the [Nerds] or [IADA] trait in play, gain 1 memory.\n[End of Your Turn][Once Per Turn] By suspending this Tamer, ＜Draw 1＞. Then, 1 of your Level 5 or higher Digimon with the [Nerds] or [IADA] trait may attack.",
+    "inheritedEffect": null,
+    "aceEffect": null,
+    "burstDigivolve": null,
+    "digiXros": null,
+    "dnaDigivolve": null,
+    "securityEffect": "[Security] Play this card without paying its memory cost.",
+    "rule": null,
+    "linkDP": null,
+    "linkEffect": null,
+    "linkRequirement": null,
+    "assemblyEffect": null,
+    "restrictions": {
+      "chinese": "Unrestricted",
+      "english": "Unrestricted",
+      "japanese": "Unrestricted",
+      "korean": "Unrestricted"
+    },
+    "illustrator": "Original",
+    "_class": "com.github.wekaito.backend.models.Card"
+  },
+  {
+    "uniqueCardNumber": "BB1-086",
+    "name": "Laura Loath",
+    "imgUrl": "/BB1-086.webp",
+    "cardType": "Tamer",
+    "color": ["Blue"],
+    "attribute": null,
+    "cardNumber": "BB1-086",
+    "digivolveConditions": [],
+    "specialDigivolve": null,
+    "stage": null,
+    "digiType": [],
+    "dp": null,
+    "playCost": 4,
+    "level": null,
+    "mainEffect": "[Start of Your Turn] If you have 2 or less memory, set it to 3.\n[Your Turn] When one of your Blue Digimon with [Greymon] in its name suspends, by suspending this Tamer, you may use 1 Blue Option card with [Greymon] in its text without paying its memory cost.",
+    "inheritedEffect": null,
+    "aceEffect": null,
+    "burstDigivolve": null,
+    "digiXros": null,
+    "dnaDigivolve": null,
+    "securityEffect": "[Security] Play this card without paying its memory cost.",
+    "rule": null,
+    "linkDP": null,
+    "linkEffect": null,
+    "linkRequirement": null,
+    "assemblyEffect": null,
+    "restrictions": {
+      "chinese": "Unrestricted",
+      "english": "Unrestricted",
+      "japanese": "Unrestricted",
+      "korean": "Unrestricted"
+    },
+    "illustrator": "Original",
+    "_class": "com.github.wekaito.backend.models.Card"
+  },
+  {
+    "uniqueCardNumber": "BB1-085",
+    "name": "Director Watanabe",
+    "imgUrl": "/BB1-085.webp",
+    "cardType": "Tamer",
+    "color": ["Blue", "Black"],
+    "attribute": null,
+    "cardNumber": "BB1-085",
+    "digivolveConditions": [],
+    "specialDigivolve": null,
+    "stage": null,
+    "digiType": ["IADA"],
+    "dp": null,
+    "playCost": 5,
+    "level": null,
+    "mainEffect": "[Start of Your Turn] If you have 2 or less memory, set it to 3.\n[On Play] Reveal the top 3 cards of your deck. Add 1 card with the [IADA] trait from among them to your hand. Return the remaining cards to the bottom of your deck.\n[All Turns] When any of your other Tamers with the [IADA] trait are played, by suspending this Tamer, gain 1 memory.",
+    "inheritedEffect": null,
+    "aceEffect": null,
+    "burstDigivolve": null,
+    "digiXros": null,
+    "dnaDigivolve": null,
+    "securityEffect": "[Security] Play this card without paying its memory cost.",
+    "rule": null,
+    "linkDP": null,
+    "linkEffect": null,
+    "linkRequirement": null,
+    "assemblyEffect": null,
+    "restrictions": {
+      "chinese": "Unrestricted",
+      "english": "Unrestricted",
+      "japanese": "Unrestricted",
+      "korean": "Unrestricted"
+    },
+    "illustrator": "Original",
+    "_class": "com.github.wekaito.backend.models.Card"
+  },
+
+  // ==========================================
+  // DIGI-EGGS
+  // ==========================================
+  {
+    "uniqueCardNumber": "BB1-001",
+    "name": "Koromon",
+    "imgUrl": "/BB1-001.webp",
+    "cardType": "Digi-Egg",
+    "color": ["Red"],
+    "attribute": null,
+    "cardNumber": "BB1-001",
+    "digivolveConditions": [],
+    "specialDigivolve": null,
+    "stage": "In-Training",
+    "digiType": ["Lesser", "Nerds"],
+    "dp": null,
+    "playCost": null,
+    "level": 2,
+    "mainEffect": null,
+    "inheritedEffect": "[Your Turn][Once Per Turn] When one of your other Digimon with the [Nerds] trait is played, this Digimon may digivolve into a Digimon card in your hand with the [Nerds] trait with its digivolution cost reduced by 1.",
+    "aceEffect": null,
+    "burstDigivolve": null,
+    "digiXros": null,
+    "dnaDigivolve": null,
+    "securityEffect": null,
+    "rule": null,
+    "linkDP": null,
+    "linkEffect": null,
+    "linkRequirement": null,
+    "assemblyEffect": null,
+    "restrictions": {
+      "chinese": "Unrestricted",
+      "english": "Unrestricted",
+      "japanese": "Unrestricted",
+      "korean": "Unrestricted"
+    },
+    "illustrator": "Bandai",
+    "_class": "com.github.wekaito.backend.models.Card"
+  },
+  {
+    "uniqueCardNumber": "BB1-005",
+    "name": "Dorimon",
+    "imgUrl": "/BB1-005.webp",
+    "cardType": "Digi-Egg",
+    "color": ["Black"],
+    "attribute": null,
+    "cardNumber": "BB1-005",
+    "digivolveConditions": [],
+    "specialDigivolve": null,
+    "stage": "In-Training",
+    "digiType": ["Lesser", "X Antibody", "CT"],
+    "dp": null,
+    "playCost": null,
+    "level": 2,
+    "mainEffect": null,
+    "inheritedEffect": "[Your Turn][Once Per Turn] When you play a Digimon with the [CT] trait or use an Option card with the [CT] trait, ＜Draw 1＞.",
+    "aceEffect": null,
+    "burstDigivolve": null,
+    "digiXros": null,
+    "dnaDigivolve": null,
+    "securityEffect": null,
+    "rule": null,
+    "linkDP": null,
+    "linkEffect": null,
+    "linkRequirement": null,
+    "assemblyEffect": null,
+    "restrictions": {
+      "chinese": "Unrestricted",
+      "english": "Unrestricted",
+      "japanese": "Unrestricted",
+      "korean": "Unrestricted"
+    },
+    "illustrator": "Bandai",
+    "_class": "com.github.wekaito.backend.models.Card"
+  },
+  {
+    "uniqueCardNumber": "BB1-002",
+    "name": "Tsunomon",
+    "imgUrl": "/BB1-002.webp",
+    "cardType": "Digi-Egg",
+    "color": ["Blue"],
+    "attribute": null,
+    "cardNumber": "BB1-002",
+    "digivolveConditions": [],
+    "specialDigivolve": null,
+    "stage": "In-Training",
+    "digiType": ["Lesser", "IADA"],
+    "dp": null,
+    "playCost": null,
+    "level": 2,
+    "mainEffect": null,
+    "inheritedEffect": "[Your Turn][Once Per Turn] When any of your Tamers with the [IADA] trait suspend, ＜Draw 1＞.",
+    "aceEffect": null,
+    "burstDigivolve": null,
+    "digiXros": null,
+    "dnaDigivolve": null,
+    "securityEffect": null,
+    "rule": null,
+    "linkDP": null,
+    "linkEffect": null,
+    "linkRequirement": null,
+    "assemblyEffect": null,
+    "restrictions": {
+      "chinese": "Unrestricted",
+      "english": "Unrestricted",
+      "japanese": "Unrestricted",
+      "korean": "Unrestricted"
+    },
+    "illustrator": "Bandai",
+    "_class": "com.github.wekaito.backend.models.Card"
+  },
+  {
+    "uniqueCardNumber": "BB1-003",
+    "name": "Nyaromon",
+    "imgUrl": "/BB1-003.webp",
+    "cardType": "Digi-Egg",
+    "color": ["Yellow"],
+    "attribute": null,
+    "cardNumber": "BB1-003",
+    "digivolveConditions": [],
+    "specialDigivolve": null,
+    "stage": "In-Training",
+    "digiType": ["Lesser", "Arena"],
+    "dp": null,
+    "playCost": null,
+    "level": 2,
+    "mainEffect": null,
+    "inheritedEffect": "[All Turns][Once Per Turn] When a card is removed from your security stack, this Digimon gets +2000 DP for the turn.",
+    "aceEffect": null,
+    "burstDigivolve": null,
+    "digiXros": null,
+    "dnaDigivolve": null,
+    "securityEffect": null,
+    "rule": null,
+    "linkDP": null,
+    "linkEffect": null,
+    "linkRequirement": null,
+    "assemblyEffect": null,
+    "restrictions": {
+      "chinese": "Unrestricted",
+      "english": "Unrestricted",
+      "japanese": "Unrestricted",
+      "korean": "Unrestricted"
+    },
+    "illustrator": "Bandai",
+    "_class": "com.github.wekaito.backend.models.Card"
+  },
+
+  // ==========================================
+  // ROOKIES (LEVEL 3)
+  // ==========================================
+  {
+    "uniqueCardNumber": "BB1-007",
+    "name": "Agumon",
+    "imgUrl": "/BB1-007.webp",
+    "cardType": "Digimon",
+    "color": ["Red", "Yellow"],
+    "attribute": "Vaccine",
+    "cardNumber": "BB1-007",
+    "digivolveConditions": [
+      { "color": "Red", "cost": 1, "level": 2 },
+      { "color": "Yellow", "cost": 1, "level": 2 }
+    ],
+    "specialDigivolve": "Digivolve: from Lv.2 w/[IADA]/[Nerds] trait: 0 cost",
+    "stage": "Rookie",
+    "digiType": ["Reptile", "Nerds", "IADA"],
+    "dp": 2000,
+    "playCost": 3,
+    "level": 3,
+    "mainEffect": "[On Play] You may return 1 card with the [Nerds] or [IADA] trait from your trash to your hand.\n[Your Turn] While your opponent has a Digimon with 10000 DP or more and you have [Nathan James] in play, this Digimon can digivolve into [WarGreymon] with the [Nerds] or [IADA] trait in your hand for a digivolution cost of 4, ignoring digivolution requirements.",
+    "inheritedEffect": "[When Attacking][Once Per Turn] 1 of your opponent's Digimon gets -2000 DP for the turn.",
+    "aceEffect": null,
+    "burstDigivolve": null,
+    "digiXros": null,
+    "dnaDigivolve": null,
+    "securityEffect": null,
+    "rule": null,
+    "linkDP": null,
+    "linkEffect": null,
+    "linkRequirement": null,
+    "assemblyEffect": null,
+    "restrictions": {
+      "chinese": "Unrestricted",
+      "english": "Unrestricted",
+      "japanese": "Unrestricted",
+      "korean": "Unrestricted"
+    },
+    "illustrator": "Bandai",
+    "_class": "com.github.wekaito.backend.models.Card"
+  },
+  {
+    "uniqueCardNumber": "BB1-024",
+    "name": "Gabumon",
+    "imgUrl": "/BB1-024.webp",
+    "cardType": "Digimon",
+    "color": ["Blue", "Green"],
+    "attribute": "Data",
+    "cardNumber": "BB1-024",
+    "digivolveConditions": [
+      { "color": "Blue", "cost": 1, "level": 2 },
+      { "color": "Green", "cost": 1, "level": 2 }
+    ],
+    "specialDigivolve": "Digivolve: from Lv.2 w/[IADA]/[Nerds] trait: 0 cost",
+    "stage": "Rookie",
+    "digiType": ["Reptile", "Nerds", "IADA"],
+    "dp": 2000,
+    "playCost": 3,
+    "level": 3,
+    "mainEffect": "[On Play] By trashing 1 card with the [Nerds] or [IADA] trait from your hand, ＜Draw 2＞.\n[Your Turn] While your opponent has a Digimon with 10000 DP or more and you have [Nathan James] in play, this Digimon can digivolve into [MetalGarurumon] with the [Nerds] or [IADA] trait in your hand for a digivolution cost of 4, ignoring digivolution requirements.",
+    "inheritedEffect": "[When Attacking][Once Per Turn] If you have 7 or fewer cards in your hand, ＜Draw 1＞.",
+    "aceEffect": null,
+    "burstDigivolve": null,
+    "digiXros": null,
+    "dnaDigivolve": null,
+    "securityEffect": null,
+    "rule": null,
+    "linkDP": null,
+    "linkEffect": null,
+    "linkRequirement": null,
+    "assemblyEffect": null,
+    "restrictions": {
+      "chinese": "Unrestricted",
+      "english": "Unrestricted",
+      "japanese": "Unrestricted",
+      "korean": "Unrestricted"
+    },
+    "illustrator": "Bandai",
+    "_class": "com.github.wekaito.backend.models.Card"
+  },
+  {
+    "uniqueCardNumber": "BB1-008",
+    "name": "Elizamon",
+    "imgUrl": "/BB1-008.webp",
+    "cardType": "Digimon",
+    "color": ["Red", "Purple"],
+    "attribute": "Virus",
+    "cardNumber": "BB1-008",
+    "digivolveConditions": [
+      { "color": "Red", "cost": 1, "level": 2 },
+      { "color": "Purple", "cost": 1, "level": 2 }
+    ],
+    "specialDigivolve": "Digivolve: from Lv.2 w/[IADA] trait: 0 cost",
+    "stage": "Rookie",
+    "digiType": ["Reptile", "IADA"],
+    "dp": 1000,
+    "playCost": 3,
+    "level": 3,
+    "mainEffect": "[On Play] Reveal the top 4 cards of your deck. Add 1 Digimon card with the [IADA] trait and 1 Tamer card with the [IADA] trait from among them to your hand. Return the remaining cards to the bottom of your deck.",
+    "inheritedEffect": "[All Turns] This Digimon with the [IADA] trait gets +1000 DP.",
+    "aceEffect": null,
+    "burstDigivolve": null,
+    "digiXros": null,
+    "dnaDigivolve": null,
+    "securityEffect": null,
+    "rule": null,
+    "linkDP": null,
+    "linkEffect": null,
+    "linkRequirement": null,
+    "assemblyEffect": null,
+    "restrictions": {
+      "chinese": "Unrestricted",
+      "english": "Unrestricted",
+      "japanese": "Unrestricted",
+      "korean": "Unrestricted"
+    },
+    "illustrator": "Bandai",
+    "_class": "com.github.wekaito.backend.models.Card"
+  },
+  {
+    "uniqueCardNumber": "BB1-025",
+    "name": "Gabumon (IADA)",
+    "imgUrl": "/BB1-025.webp",
+    "cardType": "Digimon",
+    "color": ["Blue", "Black"],
+    "attribute": "Vaccine",
+    "cardNumber": "BB1-025",
+    "digivolveConditions": [
+      { "color": "Blue", "cost": 1, "level": 2 },
+      { "color": "Black", "cost": 1, "level": 2 }
+    ],
+    "specialDigivolve": "Digivolve: from Lv.2 w/[IADA] trait: 0 cost",
+    "stage": "Rookie",
+    "digiType": ["Reptile", "IADA"],
+    "dp": 2000,
+    "playCost": 3,
+    "level": 3,
+    "mainEffect": "[Start of Your Main Phase] If you have a Tamer with the [IADA] trait in play, gain 1 memory.",
+    "inheritedEffect": "[Your Turn][Once Per Turn] When a Tamer card with the [IADA] trait is played, ＜Draw 1＞.",
+    "aceEffect": null,
+    "burstDigivolve": null,
+    "digiXros": null,
+    "dnaDigivolve": null,
+    "securityEffect": null,
+    "rule": null,
+    "linkDP": null,
+    "linkEffect": null,
+    "linkRequirement": null,
+    "assemblyEffect": null,
+    "restrictions": {
+      "chinese": "Unrestricted",
+      "english": "Unrestricted",
+      "japanese": "Unrestricted",
+      "korean": "Unrestricted"
+    },
+    "illustrator": "Bandai",
+    "_class": "com.github.wekaito.backend.models.Card"
+  },
+
+  // ==========================================
+  // CHAMPIONS (LEVEL 4)
+  // ==========================================
+  {
     "uniqueCardNumber": "BB1-012",
     "name": "Greymon",
-    "imgUrl": "/BB1-012.png",
+    "imgUrl": "/BB1-012.webp",
     "cardType": "Digimon",
     "color": ["Red", "Yellow"],
     "attribute": "Vaccine",
@@ -64,17 +605,13 @@ db.card.insertMany([
       { "color": "Red", "cost": 3, "level": 3 },
       { "color": "Yellow", "cost": 3, "level": 3 }
     ],
-    "specialDigivolve": null,
+    "specialDigivolve": "Digivolve: from Lv.3 w/[Nerds] or [IADA] trait: 2 cost",
     "stage": "Champion",
     "digiType": ["Dinosaur", "Nerds", "IADA"],
     "dp": 5000,
     "playCost": 5,
     "level": 4,
-    "mainEffect": "[On Play] [When Digivolving] You may play 1 Tamer card " +
-      "with the [Nerds] or [IADA] trait from your hand without paying its " +
-      "memory cost. This effect cannot play a Tamer card with the same " +
-      "name as any of your Tamers in play. Then, if you have [Nathan James] " +
-      "in play, 1 of your opponent's Digimon gets -3000 DP for the turn.",
+    "mainEffect": "[On Play][When Digivolving] You may play 1 Tamer card with the [Nerds] or [IADA] trait from your hand without paying its memory cost. This effect cannot play a Tamer card with the same name as any of your Tamers in play. Then, if you have [Nathan James] in play, 1 of your opponent's Digimon gets -3000 DP for the turn.",
     "inheritedEffect": "[Your Turn] This Digimon gets +2000 DP.",
     "aceEffect": null,
     "burstDigivolve": null,
@@ -86,19 +623,96 @@ db.card.insertMany([
     "linkEffect": null,
     "linkRequirement": null,
     "assemblyEffect": null,
-    "restrictions": { 
-      "chinese": "Unrestricted", 
-      "english": "Unrestricted", 
-      "japanese": "Unrestricted", 
-      "korean": "Unrestricted" 
+    "restrictions": {
+      "chinese": "Unrestricted",
+      "english": "Unrestricted",
+      "japanese": "Unrestricted",
+      "korean": "Unrestricted"
     },
-    "illustrator": "Custom BB1 Art",
+    "illustrator": "Bandai",
+    "_class": "com.github.wekaito.backend.models.Card"
+  },
+  {
+    "uniqueCardNumber": "BB1-026",
+    "name": "Garurumon",
+    "imgUrl": "/BB1-026.webp",
+    "cardType": "Digimon",
+    "color": ["Blue", "Green"],
+    "attribute": "Data",
+    "cardNumber": "BB1-026",
+    "digivolveConditions": [
+      { "color": "Blue", "cost": 3, "level": 3 },
+      { "color": "Green", "cost": 3, "level": 3 }
+    ],
+    "specialDigivolve": "Digivolve: from Lv.3 w/[Nerds] or [IADA] trait: 2 cost",
+    "stage": "Champion",
+    "digiType": ["Beast", "Nerds", "IADA"],
+    "dp": 5000,
+    "playCost": 5,
+    "level": 4,
+    "mainEffect": "[On Play][When Digivolving] You may play 1 Tamer card with the [Nerds] or [IADA] trait from your hand without paying its memory cost. This effect cannot play a Tamer card with the same name as any of your Tamers in play. Then, if you have [Nathan James] in play, one of your opponent's cards cannot unsuspend during your opponent's next unsuspend phase.",
+    "inheritedEffect": "[Your Turn][Once Per Turn] When a Digimon card with the [IADA] or [Nerds] trait is played, ＜Draw 1＞.",
+    "aceEffect": null,
+    "burstDigivolve": null,
+    "digiXros": null,
+    "dnaDigivolve": null,
+    "securityEffect": null,
+    "rule": null,
+    "linkDP": null,
+    "linkEffect": null,
+    "linkRequirement": null,
+    "assemblyEffect": null,
+    "restrictions": {
+      "chinese": "Unrestricted",
+      "english": "Unrestricted",
+      "japanese": "Unrestricted",
+      "korean": "Unrestricted"
+    },
+    "illustrator": "Bandai",
+    "_class": "com.github.wekaito.backend.models.Card"
+  },
+  {
+    "uniqueCardNumber": "BB1-028",
+    "name": "Greymon (Virus)",
+    "imgUrl": "/BB1-028.webp",
+    "cardType": "Digimon",
+    "color": ["Blue"],
+    "attribute": "Virus",
+    "cardNumber": "BB1-028",
+    "digivolveConditions": [
+      { "color": "Blue", "cost": 2, "level": 3 }
+    ],
+    "specialDigivolve": "Digivolve: from Blue [Gaossmon]: 2 cost",
+    "stage": "Champion",
+    "digiType": ["Dinosaur"],
+    "dp": 5000,
+    "playCost": 5,
+    "level": 4,
+    "mainEffect": "[On Play][When Digivolving] You may reveal the top 4 cards of your deck. Add to your hand 1 Blue Digimon card with [Greymon] in its name and 1 [Laura Loath]. Place the rest at the bottom of the deck in any order.",
+    "inheritedEffect": "[All Turns][Once Per Turn] If a Digimon is deleted, you may play 1 [Laura Loath] from your hand without paying the cost.",
+    "aceEffect": null,
+    "burstDigivolve": null,
+    "digiXros": null,
+    "dnaDigivolve": null,
+    "securityEffect": null,
+    "rule": null,
+    "linkDP": null,
+    "linkEffect": null,
+    "linkRequirement": null,
+    "assemblyEffect": null,
+    "restrictions": {
+      "chinese": "Unrestricted",
+      "english": "Unrestricted",
+      "japanese": "Unrestricted",
+      "korean": "Unrestricted"
+    },
+    "illustrator": "Bandai",
     "_class": "com.github.wekaito.backend.models.Card"
   },
   {
     "uniqueCardNumber": "BB1-027",
-    "name": "Garurumon",
-    "imgUrl": "/BB1-027.png",
+    "name": "Garurumon (IADA)",
+    "imgUrl": "/BB1-027.webp",
     "cardType": "Digimon",
     "color": ["Blue", "Black"],
     "attribute": "Vaccine",
@@ -107,18 +721,14 @@ db.card.insertMany([
       { "color": "Blue", "cost": 3, "level": 3 },
       { "color": "Black", "cost": 3, "level": 3 }
     ],
-    "specialDigivolve": null,
+    "specialDigivolve": "Digivolve: from Lv.3 w/[IADA] trait: 2 cost",
     "stage": "Champion",
     "digiType": ["Beast", "IADA"],
     "dp": 5000,
     "playCost": 5,
     "level": 4,
-    "mainEffect": "[On Play] [When Digivolving] You may play 1 Tamer card " +
-      "with the [IADA] trait from your hand without paying the cost. This " +
-      "effect cannot play a Tamer card with the same name as any of your " +
-      "Tamers in play.",
-    "inheritedEffect": "[Your Turn] [Once Per Turn] When a Tamer card " +
-      "with the [IADA] trait is played, ＜Draw 1＞.",
+    "mainEffect": "[On Play][When Digivolving] You may play 1 Tamer card with the [IADA] trait from your hand without paying its memory cost. This effect cannot play a Tamer card with the same name as any of your Tamers in play.",
+    "inheritedEffect": "[Your Turn][Once Per Turn] When a Tamer card with the [IADA] trait is played, ＜Draw 1＞.",
     "aceEffect": null,
     "burstDigivolve": null,
     "digiXros": null,
@@ -129,170 +739,33 @@ db.card.insertMany([
     "linkEffect": null,
     "linkRequirement": null,
     "assemblyEffect": null,
-    "restrictions": { 
-      "chinese": "Unrestricted", 
-      "english": "Unrestricted", 
-      "japanese": "Unrestricted", 
-      "korean": "Unrestricted" 
+    "restrictions": {
+      "chinese": "Unrestricted",
+      "english": "Unrestricted",
+      "japanese": "Unrestricted",
+      "korean": "Unrestricted"
     },
-    "illustrator": "Custom BB1 Art",
-    "_class": "com.github.wekaito.backend.models.Card"
-  },
-  {
-    "uniqueCardNumber": "BB1-028",
-    "name": "Greymon",
-    "imgUrl": "/BB1-028.png",
-    "cardType": "Digimon",
-    "color": ["Blue"],
-    "attribute": "Virus",
-    "cardNumber": "BB1-028",
-    "digivolveConditions": [
-      { "color": "Blue", "cost": 2, "level": 2 }
-    ],
-    "specialDigivolve": null,
-    "stage": "Champion",
-    "digiType": ["Dinosaur"],
-    "dp": 5000,
-    "playCost": 5,
-    "level": 4,
-    "mainEffect": "[On Play] [When Digivolving] You may reveal the top 4 " +
-      "cards of your deck. Add to your hand 1 Blue Digimon with [Greymon] " +
-      "in its name and 1 [Laura Loath]. Place the rest at the bottom of " +
-      "the deck in any order.",
-    "inheritedEffect": "[All Turns] [Once Per Turn] If a Digimon is " +
-      "deleted, you may play 1 [Laura Loath] from your hand without " +
-      "paying the cost.",
-    "aceEffect": null,
-    "burstDigivolve": null,
-    "digiXros": null,
-    "dnaDigivolve": null,
-    "securityEffect": null,
-    "rule": null,
-    "linkDP": null,
-    "linkEffect": null,
-    "linkRequirement": null,
-    "assemblyEffect": null,
-    "restrictions": { 
-      "chinese": "Unrestricted", 
-      "english": "Unrestricted", 
-      "japanese": "Unrestricted", 
-      "korean": "Unrestricted" 
-    },
-    "illustrator": "Custom BB1 Art",
-    "_class": "com.github.wekaito.backend.models.Card"
-  },
-  {
-    "uniqueCardNumber": "BB1-029",
-    "name": "Sangloupmon",
-    "imgUrl": "/BB1-029.png",
-    "cardType": "Digimon",
-    "color": ["Blue", "Black"],
-    "attribute": "Virus",
-    "cardNumber": "BB1-029",
-    "digivolveConditions": [
-      { "color": "Blue", "cost": 3, "level": 3 },
-      { "color": "Black", "cost": 3, "level": 3 }
-    ],
-    "specialDigivolve": null,
-    "stage": "Champion",
-    "digiType": ["Dark Animal", "Girlies", "IADA"],
-    "dp": 5000,
-    "playCost": 5,
-    "level": 4,
-    "mainEffect": "＜Blocker＞\n" +
-      "[On Play] [When Digivolving] ＜Draw 1＞. Then, if you have [Kazuo " +
-      "Kubo] in play, until the end of your opponent's turn, 1 of your " +
-      "opponent's Digimon gains \"[Start of Your Main Phase] This " +
-      "Digimon attacks.\"",
-    "inheritedEffect": "＜Reboot＞",
-    "aceEffect": null,
-    "burstDigivolve": null,
-    "digiXros": null,
-    "dnaDigivolve": null,
-    "securityEffect": null,
-    "rule": null,
-    "linkDP": null,
-    "linkEffect": null,
-    "linkRequirement": null,
-    "assemblyEffect": null,
-    "restrictions": { 
-      "chinese": "Unrestricted", 
-      "english": "Unrestricted", 
-      "japanese": "Unrestricted", 
-      "korean": "Unrestricted" 
-    },
-    "illustrator": "Custom BB1 Art",
-    "_class": "com.github.wekaito.backend.models.Card"
-  },
-  {
-    "uniqueCardNumber": "BB1-031",
-    "name": "MetalGreymon",
-    "imgUrl": "/BB1-031.png",
-    "cardType": "Digimon",
-    "color": ["Blue"],
-    "attribute": "Virus",
-    "cardNumber": "BB1-031",
-    "digivolveConditions": [
-      { "color": "Blue", "cost": 4, "level": 3 }
-    ],
-    "specialDigivolve": null,
-    "stage": "Ultimate",
-    "digiType": ["Cyborg"],
-    "dp": 7000,
-    "playCost": 7,
-    "level": 5,
-    "mainEffect": "[On Play] [When Digivolving] You may suspend up to 2 " +
-      "of your opponent's Digimon with DP as much or lower as this " +
-      "Digimon's DP. Then if it's your turn, you may delete 1 of your " +
-      "opponent's suspended Digimon.\n" +
-      "[All Turns] While you have a [Laura Loath] in play, this card " +
-      "gains +3000 DP and ＜Piercing＞.\n" +
-      "[All Turns] [Once Per Turn] When any Option cards are used, gain " +
-      "1 memory.",
-    "inheritedEffect": "[Your Turn] [Once Per Turn] When you use a Blue " +
-      "Option with [Greymon] in its text, return 1 of your opponent's " +
-      "Digimon with the lowest DP to the bottom of the deck.",
-    "aceEffect": null,
-    "burstDigivolve": null,
-    "digiXros": null,
-    "dnaDigivolve": null,
-    "securityEffect": null,
-    "rule": null,
-    "linkDP": null,
-    "linkEffect": null,
-    "linkRequirement": null,
-    "assemblyEffect": null,
-    "restrictions": { 
-      "chinese": "Unrestricted", 
-      "english": "Unrestricted", 
-      "japanese": "Unrestricted", 
-      "korean": "Unrestricted" 
-    },
-    "illustrator": "Custom BB1 Art",
+    "illustrator": "Bandai",
     "_class": "com.github.wekaito.backend.models.Card"
   },
   {
     "uniqueCardNumber": "BB1-041",
     "name": "Sistermon Ciel",
-    "imgUrl": "/BB1-041.png",
+    "imgUrl": "/BB1-041.webp",
     "cardType": "Digimon",
-    "color": ["Yellow", "Black"],
+    "color": ["Yellow"],
     "attribute": "Vaccine",
     "cardNumber": "BB1-041",
     "digivolveConditions": [
-      { "color": "Yellow", "cost": 2, "level": 3 },
-      { "color": "Black", "cost": 2, "level": 3 }
+      { "color": "Yellow", "cost": 2, "level": 3 }
     ],
-    "specialDigivolve": null,
+    "specialDigivolve": "Digivolve: from Lv.3 w/[DC] trait: 2 cost",
     "stage": "Champion",
     "digiType": ["Puppet", "DC"],
     "dp": 5000,
     "playCost": 5,
     "level": 4,
-    "mainEffect": "[When Digivolving] Play 1 Tamer card with the [DC] " +
-      "trait from your hand without paying its memory cost. For this " +
-      "turn, the Tamer played by this effect is treated as a 3000 DP " +
-      "Digimon and cannot digivolve.",
+    "mainEffect": "[When Digivolving] Play 1 Tamer card with the [DC] trait from your hand without paying its memory cost. For this turn, the Tamer played by this effect is treated as a 3000 DP Digimon and cannot digivolve.",
     "inheritedEffect": "＜Alliance＞",
     "aceEffect": null,
     "burstDigivolve": null,
@@ -304,37 +777,350 @@ db.card.insertMany([
     "linkEffect": null,
     "linkRequirement": null,
     "assemblyEffect": null,
-    "restrictions": { 
-      "chinese": "Unrestricted", 
-      "english": "Unrestricted", 
-      "japanese": "Unrestricted", 
-      "korean": "Unrestricted" 
+    "restrictions": {
+      "chinese": "Unrestricted",
+      "english": "Unrestricted",
+      "japanese": "Unrestricted",
+      "korean": "Unrestricted"
     },
-    "illustrator": "Custom BB1 Art",
+    "illustrator": "Bandai",
     "_class": "com.github.wekaito.backend.models.Card"
   },
   {
-    "uniqueCardNumber": "BB1-043",
-    "name": "Lynxmon",
-    "imgUrl": "/BB1-043.png",
+    "uniqueCardNumber": "BB1-054",
+    "name": "Galemon",
+    "imgUrl": "/BB1-054.webp",
     "cardType": "Digimon",
-    "color": ["Yellow", "Red"],
-    "attribute": "Free",
-    "cardNumber": "BB1-043",
+    "color": ["Green"],
+    "attribute": "Data",
+    "cardNumber": "BB1-054",
     "digivolveConditions": [
-      { "color": "Yellow", "cost": 3, "level": 3 },
-      { "color": "Red", "cost": 3, "level": 3 }
+      { "color": "Green", "cost": 2, "level": 3 }
     ],
-    "specialDigivolve": null,
+    "specialDigivolve": "Digivolve: from Lv.3 w/[Arena] or [IADA] trait: 2 cost",
     "stage": "Champion",
-    "digiType": ["Beast", "Arena"],
-    "dp": 6000,
-    "playCost": 6,
+    "digiType": ["Bird Dragon", "Arena", "IADA"],
+    "dp": 4000,
+    "playCost": 5,
     "level": 4,
-    "mainEffect": "＜Armor Purge＞ ＜Barrier＞\n" +
-      "[End of Attack] [Once Per Turn] This Digimon may digivolve into " +
-      "a Digimon card in your hand with the [Arena], [Angel], or [Holy " +
-      "Beast] trait with its digivolution cost reduced by 1.",
+    "mainEffect": "[When Attacking] Suspend 1 Digimon. Then, if attacking an opponent's Digimon, or if you have [Orla Mallon] in play, this Digimon may digivolve into a Digimon card with the [Arena] or [IADA] trait with its digivolution cost reduced by 1.",
+    "inheritedEffect": "[All Turns] While this Digimon is suspended, it gets +2000 DP.",
+    "aceEffect": null,
+    "burstDigivolve": null,
+    "digiXros": null,
+    "dnaDigivolve": null,
+    "securityEffect": null,
+    "rule": null,
+    "linkDP": null,
+    "linkEffect": null,
+    "linkRequirement": null,
+    "assemblyEffect": null,
+    "restrictions": {
+      "chinese": "Unrestricted",
+      "english": "Unrestricted",
+      "japanese": "Unrestricted",
+      "korean": "Unrestricted"
+    },
+    "illustrator": "Bandai",
+    "_class": "com.github.wekaito.backend.models.Card"
+  },
+
+  // ==========================================
+  // ULTIMATES (LEVEL 5)
+  // ==========================================
+  {
+    "uniqueCardNumber": "BB1-016",
+    "name": "MetalGreymon",
+    "imgUrl": "/BB1-016.webp",
+    "cardType": "Digimon",
+    "color": ["Red", "Black"],
+    "attribute": "Vaccine",
+    "cardNumber": "BB1-016",
+    "digivolveConditions": [
+      { "color": "Red", "cost": 4, "level": 4 },
+      { "color": "Black", "cost": 4, "level": 4 }
+    ],
+    "specialDigivolve": "Digivolve: from Lv.4 w/[Nerds] or [IADA] trait: 3 cost",
+    "stage": "Ultimate",
+    "digiType": ["Cyborg", "Nerds", "IADA"],
+    "dp": 7000,
+    "playCost": 7,
+    "level": 5,
+    "mainEffect": "＜Blocker＞\n[When Attacking][Once Per Turn] You may play 1 Level 5 or lower Digimon card with the [Nerds] trait from your hand with its play cost reduced by 2.\n[End of Attack][Once Per Turn] If this Digimon has 14000 or more DP, 1 of your other Digimon with the [Nerds] trait may digivolve into a Digimon card in your hand with the [Nerds] trait with its digivolution cost reduced by 2.",
+    "inheritedEffect": "＜Alliance＞",
+    "aceEffect": null,
+    "burstDigivolve": null,
+    "digiXros": null,
+    "dnaDigivolve": null,
+    "securityEffect": null,
+    "rule": null,
+    "linkDP": null,
+    "linkEffect": null,
+    "linkRequirement": null,
+    "assemblyEffect": "＜Assembly -2＞ 1 Level 4 or lower Digimon card with the [Nerds] trait",
+    "restrictions": {
+      "chinese": "Unrestricted",
+      "english": "Unrestricted",
+      "japanese": "Unrestricted",
+      "korean": "Unrestricted"
+    },
+    "illustrator": "Bandai",
+    "_class": "com.github.wekaito.backend.models.Card"
+  },
+  {
+    "uniqueCardNumber": "BB1-031",
+    "name": "MetalGreymon (Virus)",
+    "imgUrl": "/BB1-031.webp",
+    "cardType": "Digimon",
+    "color": ["Blue"],
+    "attribute": "Virus",
+    "cardNumber": "BB1-031",
+    "digivolveConditions": [
+      { "color": "Blue", "cost": 4, "level": 4 }
+    ],
+    "specialDigivolve": "Digivolve: Blue [Greymon]: 3 cost",
+    "stage": "Ultimate",
+    "digiType": ["Cyborg"],
+    "dp": 7000,
+    "playCost": 7,
+    "level": 5,
+    "mainEffect": "[On Play][When Digivolving] You may suspend up to 2 of your opponent's Digimon with DP as much or lower as this Digimon's DP. Then if it's your turn, you may delete 1 of your opponent's suspended Digimon.\n[All Turns][Once Per Turn] When any Option cards are used, gain 1 memory.\n[All Turns] While you have a [Laura Loath] in play, this card gets +3000 DP and gains ＜Piercing＞.",
+    "inheritedEffect": "[Your Turn][Once Per Turn] When you use a Blue Option card with [Greymon] in its text, return 1 of your opponent's Digimon with the lowest DP to the bottom of the deck.",
+    "aceEffect": null,
+    "burstDigivolve": null,
+    "digiXros": null,
+    "dnaDigivolve": null,
+    "securityEffect": null,
+    "rule": null,
+    "linkDP": null,
+    "linkEffect": null,
+    "linkRequirement": null,
+    "assemblyEffect": null,
+    "restrictions": {
+      "chinese": "Unrestricted",
+      "english": "Unrestricted",
+      "japanese": "Unrestricted",
+      "korean": "Unrestricted"
+    },
+    "illustrator": "Bandai",
+    "_class": "com.github.wekaito.backend.models.Card"
+  },
+  {
+    "uniqueCardNumber": "BB1-032",
+    "name": "MetalMamemon",
+    "imgUrl": "/BB1-032.webp",
+    "cardType": "Digimon",
+    "color": ["Blue", "Black"],
+    "attribute": "Data",
+    "cardNumber": "BB1-032",
+    "digivolveConditions": [
+      { "color": "Blue", "cost": 4, "level": 4 },
+      { "color": "Black", "cost": 4, "level": 4 }
+    ],
+    "specialDigivolve": "Digivolve: from Lv.4 w/[IADA] trait: 3 cost",
+    "stage": "Ultimate",
+    "digiType": ["Cyborg", "IADA"],
+    "dp": 7000,
+    "playCost": 7,
+    "level": 5,
+    "mainEffect": "[On Play][When Digivolving] For each of your Tamers with the [IADA] trait with different names, trash 1 digivolution card from any of your opponent's Digimon. Then, return 1 of your opponent's Digimon with 1 or fewer digivolution cards to its owner's hand.\n[Your Turn][Once Per Turn] When any of your Tamers with the [IADA] trait are played, you may unsuspend this Digimon.",
+    "inheritedEffect": "[Your Turn][Once Per Turn] When any of your Tamers with the [IADA] trait suspend, ＜De-Digivolve 1＞ 1 of your opponent's Digimon.",
+    "aceEffect": null,
+    "burstDigivolve": null,
+    "digiXros": null,
+    "dnaDigivolve": null,
+    "securityEffect": null,
+    "rule": null,
+    "linkDP": null,
+    "linkEffect": null,
+    "linkRequirement": null,
+    "assemblyEffect": null,
+    "restrictions": {
+      "chinese": "Unrestricted",
+      "english": "Unrestricted",
+      "japanese": "Unrestricted",
+      "korean": "Unrestricted"
+    },
+    "illustrator": "Bandai",
+    "_class": "com.github.wekaito.backend.models.Card"
+  },
+  {
+    "uniqueCardNumber": "BB1-070",
+    "name": "Rebellimon",
+    "imgUrl": "/BB1-070.webp",
+    "cardType": "Digimon",
+    "color": ["Black", "Purple"],
+    "attribute": "Virus",
+    "cardNumber": "BB1-070",
+    "digivolveConditions": [
+      { "color": "Black", "cost": 4, "level": 4 },
+      { "color": "Purple", "cost": 4, "level": 4 }
+    ],
+    "specialDigivolve": "Digivolve: from Lv.4 w/[ME] trait: 3 cost",
+    "dnaDigivolve": "[DNA Digivolve] [Black]/[Red] Lv.4 + [Purple]/[Yellow] Lv.4: Cost 0",
+    "stage": "Ultimate",
+    "digiType": ["Cyborg", "ME"],
+    "dp": 8000,
+    "playCost": 8,
+    "level": 5,
+    "mainEffect": "＜Collision＞ ＜Piercing＞\n[On Play][When Digivolving] Reveal the top 3 cards of your deck. Then, delete 1 of your opponent's play cost 5 or lower Digimon. For each card with the [ME] trait revealed, add 1 to the maximum play cost this effect can delete. Trash the revealed cards.\n[All Turns][Once Per Turn] When any of your cards with the [ME] trait are trashed from your revealed cards, 1 of your other Level 5 or lower Digimon with the [ME] trait may digivolve into 1 of those trashed cards without paying the cost.",
+    "inheritedEffect": "[All Turns][Once Per Turn] When cards are trashed from this [ME] trait Digimon's digivolution cards or your revealed cards, ＜De-Digivolve 1＞ 1 of your opponent's Digimon.",
+    "aceEffect": null,
+    "burstDigivolve": null,
+    "digiXros": null,
+    "securityEffect": null,
+    "rule": null,
+    "linkDP": null,
+    "linkEffect": null,
+    "linkRequirement": null,
+    "assemblyEffect": null,
+    "restrictions": {
+      "chinese": "Unrestricted",
+      "english": "Unrestricted",
+      "japanese": "Unrestricted",
+      "korean": "Unrestricted"
+    },
+    "illustrator": "Bandai",
+    "_class": "com.github.wekaito.backend.models.Card"
+  },
+  {
+    "uniqueCardNumber": "BB1-059",
+    "name": "The Raven",
+    "imgUrl": "/BB1-059.webp",
+    "cardType": "Digimon",
+    "color": ["Green", "Purple"],
+    "attribute": "Vaccine",
+    "cardNumber": "BB1-059",
+    "digivolveConditions": [
+      { "color": "Green", "cost": 3, "level": 4 },
+      { "color": "Purple", "cost": 3, "level": 4 }
+    ],
+    "specialDigivolve": "Digivolve: from Lv.4 w/[DC] trait: 3 cost",
+    "stage": "Ultimate",
+    "digiType": ["Avian", "DC"],
+    "dp": 7000,
+    "playCost": 7,
+    "level": 5,
+    "mainEffect": "＜Fortitude＞\n[On Play][When Digivolving] Suspend 1 of your opponent's Tamers. Then, 1 of your opponent's Tamers cannot unsuspend until the end of your opponent's turn.\n[All Turns][Once Per Turn] When an opponent's Tamer suspends, you may trash the top card of your opponent's deck for each of their suspended Tamers.",
+    "inheritedEffect": "[All Turns][Once Per Turn] When an opponent's Tamer suspends, trash your opponent's top security card.",
+    "aceEffect": null,
+    "burstDigivolve": null,
+    "digiXros": null,
+    "dnaDigivolve": null,
+    "securityEffect": null,
+    "rule": "Treat this card as having the name [Crowmon]",
+    "linkDP": null,
+    "linkEffect": null,
+    "linkRequirement": null,
+    "assemblyEffect": null,
+    "restrictions": {
+      "chinese": "Unrestricted",
+      "english": "Unrestricted",
+      "japanese": "Unrestricted",
+      "korean": "Unrestricted"
+    },
+    "illustrator": "Bandai",
+    "_class": "com.github.wekaito.backend.models.Card"
+  },
+  {
+    "uniqueCardNumber": "BB1-080",
+    "name": "Phantomon",
+    "imgUrl": "/BB1-080.webp",
+    "cardType": "Digimon",
+    "color": ["Purple"],
+    "attribute": "Virus",
+    "cardNumber": "BB1-080",
+    "digivolveConditions": [
+      { "color": "Purple", "cost": 3, "level": 4 }
+    ],
+    "specialDigivolve": "Digivolve: from Lv.4 w/[CT] trait: 3 cost",
+    "stage": "Ultimate",
+    "digiType": ["Ghost", "CT"],
+    "dp": 7000,
+    "playCost": 7,
+    "level": 5,
+    "mainEffect": "＜Scapegoat＞\n[When Attacking] By placing 1 of your Tamers with [Ridendo Fusco] in its name as this Digimon's bottom digivolution card, this Digimon may digivolve into a Digimon card with the [CT] trait in your hand with its digivolution cost reduced by 2.",
+    "inheritedEffect": "[End of Attack][Once Per Turn] By unsuspending this Digimon, delete 1 of your Digimon with the lowest Level.",
+    "aceEffect": null,
+    "burstDigivolve": null,
+    "digiXros": null,
+    "dnaDigivolve": null,
+    "securityEffect": null,
+    "rule": null,
+    "linkDP": null,
+    "linkEffect": null,
+    "linkRequirement": null,
+    "assemblyEffect": null,
+    "restrictions": {
+      "chinese": "Unrestricted",
+      "english": "Unrestricted",
+      "japanese": "Unrestricted",
+      "korean": "Unrestricted"
+    },
+    "illustrator": "Bandai",
+    "_class": "com.github.wekaito.backend.models.Card"
+  },
+
+  // ==========================================
+  // MEGAS (LEVEL 6)
+  // ==========================================
+  {
+    "uniqueCardNumber": "BB1-034",
+    "name": "ShineGreymon",
+    "imgUrl": "/BB1-034.webp",
+    "cardType": "Digimon",
+    "color": ["Blue"],
+    "attribute": "Virus",
+    "cardNumber": "BB1-034",
+    "digivolveConditions": [
+      { "color": "Blue", "cost": 4, "level": 5 }
+    ],
+    "specialDigivolve": "Digivolve: Blue [MetalGreymon]: 3 cost / [ZeigGreymon]: 1 cost",
+    "stage": "Mega",
+    "digiType": ["Light Dragon"],
+    "dp": 12000,
+    "playCost": 12,
+    "level": 6,
+    "mainEffect": "＜Blocker＞ ＜Piercing＞\n[On Play][When Digivolving] If [Laura Loath] is not in this Digimon's digivolution cards, you may place 1 such card from your hand or battle area under this Digimon as its bottom digivolution card. Then, you may delete 1 of your opponent's Digimon with the lowest play cost.\n[All Turns] If this card would leave the field, you may play 1 [Laura Loath] and 1 Level 4 Blue [Greymon] from this card's digivolution cards without paying the cost.",
+    "inheritedEffect": null,
+    "aceEffect": null,
+    "burstDigivolve": null,
+    "digiXros": null,
+    "dnaDigivolve": null,
+    "securityEffect": null,
+    "rule": null,
+    "linkDP": null,
+    "linkEffect": null,
+    "linkRequirement": null,
+    "assemblyEffect": "＜Assembly -5＞ Blue [Greymon] x [Laura Loath]",
+    "restrictions": {
+      "chinese": "Unrestricted",
+      "english": "Unrestricted",
+      "japanese": "Unrestricted",
+      "korean": "Unrestricted"
+    },
+    "illustrator": "Bandai",
+    "_class": "com.github.wekaito.backend.models.Card"
+  },
+  {
+    "uniqueCardNumber": "BB1-035",
+    "name": "Metatromon",
+    "imgUrl": "/BB1-035.webp",
+    "cardType": "Digimon",
+    "color": ["Blue", "Black"],
+    "attribute": "Vaccine",
+    "cardNumber": "BB1-035",
+    "digivolveConditions": [
+      { "color": "Blue", "cost": 5, "level": 5 },
+      { "color": "Black", "cost": 5, "level": 5 }
+    ],
+    "specialDigivolve": "Digivolve: from Lv.5 w/[IADA] trait: 4 cost",
+    "stage": "Mega",
+    "digiType": ["Machine", "IADA"],
+    "dp": 13000,
+    "playCost": 13,
+    "level": 6,
+    "mainEffect": "＜Blocker＞ ＜Decode {[MetalMamemon]}＞\nWhen any of your [MetalMamemon] would digivolve into this Digimon card, reduce the digivolution cost by 1 for every 2 of your [IADA] trait Tamers with different names.\n[When Digivolving][When Attacking][Once Per Turn] You may play 1 Tamer card with the [IADA] trait from your hand or trash without paying its memory cost. This effect cannot play a Tamer card with the same name as any of your Tamers in play. Then, if you have [Director Watanabe] in play, return 1 of your opponent's Digimon with the lowest play cost to the bottom of their deck.\n[All Turns][Once Per Turn] When any of your Tamers with the [IADA] trait are played or suspend, 1 of your opponent's Digimon cannot suspend until the end of your opponent's turn.",
     "inheritedEffect": null,
     "aceEffect": null,
     "burstDigivolve": null,
@@ -346,126 +1132,35 @@ db.card.insertMany([
     "linkEffect": null,
     "linkRequirement": null,
     "assemblyEffect": null,
-    "restrictions": { 
-      "chinese": "Unrestricted", 
-      "english": "Unrestricted", 
-      "japanese": "Unrestricted", 
-      "korean": "Unrestricted" 
+    "restrictions": {
+      "chinese": "Unrestricted",
+      "english": "Unrestricted",
+      "japanese": "Unrestricted",
+      "korean": "Unrestricted"
     },
-    "illustrator": "Custom BB1 Art",
+    "illustrator": "Bandai",
     "_class": "com.github.wekaito.backend.models.Card"
   },
   {
-    "uniqueCardNumber": "BB1-054",
-    "name": "Galemon",
-    "imgUrl": "/BB1-054.png",
+    "uniqueCardNumber": "BB1-049",
+    "name": "LovelyAngemon",
+    "imgUrl": "/BB1-049.webp",
     "cardType": "Digimon",
-    "color": ["Green"],
-    "attribute": "Data",
-    "cardNumber": "BB1-054",
-    "digivolveConditions": [
-      { "color": "Green", "cost": 2, "level": 3 }
-    ],
-    "specialDigivolve": null,
-    "stage": "Champion",
-    "digiType": ["Bird Dragon", "Arena", "IADA"],
-    "dp": 4000,
-    "playCost": 5,
-    "level": 4,
-    "mainEffect": "[When Attacking] Suspend 1 Digimon. Then, if attacking " +
-      "an opponent's Digimon, or if you have [Orla Mallon] in play, this " +
-      "Digimon may digivolve into a Digimon card with the [Arena] or " +
-      "[IADA] trait with its digivolution cost reduced by 1.",
-    "inheritedEffect": "[All Turns] While this Digimon is suspended, " +
-      "it gets +2000 DP.",
-    "aceEffect": null,
-    "burstDigivolve": null,
-    "digiXros": null,
-    "dnaDigivolve": null,
-    "securityEffect": null,
-    "rule": null,
-    "linkDP": null,
-    "linkEffect": null,
-    "linkRequirement": null,
-    "assemblyEffect": null,
-    "restrictions": { 
-      "chinese": "Unrestricted", 
-      "english": "Unrestricted", 
-      "japanese": "Unrestricted", 
-      "korean": "Unrestricted" 
-    },
-    "illustrator": "Custom BB1 Art",
-    "_class": "com.github.wekaito.backend.models.Card"
-  },
-  {
-    "uniqueCardNumber": "BB1-055",
-    "name": "Weedmon",
-    "imgUrl": "/BB1-055.png",
-    "cardType": "Digimon",
-    "color": ["Green", "Yellow"],
-    "attribute": "Virus",
-    "cardNumber": "BB1-055",
-    "digivolveConditions": [
-      { "color": "Green", "cost": 3, "level": 3 },
-      { "color": "Yellow", "cost": 3, "level": 3 }
-    ],
-    "specialDigivolve": null,
-    "stage": "Champion",
-    "digiType": ["Vegetation", "Nerds", "IADA"],
-    "dp": 5000,
-    "playCost": 5,
-    "level": 4,
-    "mainEffect": "[On Play] [When Digivolving] Suspend 1 of your " +
-      "opponent's Digimon. Then, if you have a Tamer with [Oryon] " +
-      "in its name in play, that Digimon cannot unsuspend during " +
-      "your opponent's next unsuspend phase.\n" +
-      "[Your Turn] While you have a Tamer with [Oryon Sonier] in " +
-      "its name in play, all your Digimon with the [IADA] or [Nerds] " +
-      "trait gain ＜Piercing＞.",
-    "inheritedEffect": "[Your Turn] [Once Per Turn] When an opponent's " +
-      "Digimon becomes suspended, gain 1 memory.",
-    "aceEffect": null,
-    "burstDigivolve": null,
-    "digiXros": null,
-    "dnaDigivolve": null,
-    "securityEffect": null,
-    "rule": null,
-    "linkDP": null,
-    "linkEffect": null,
-    "linkRequirement": null,
-    "assemblyEffect": null,
-    "restrictions": { 
-      "chinese": "Unrestricted", 
-      "english": "Unrestricted", 
-      "japanese": "Unrestricted", 
-      "korean": "Unrestricted" 
-    },
-    "illustrator": "Custom BB1 Art",
-    "_class": "com.github.wekaito.backend.models.Card"
-  },
-  {
-    "uniqueCardNumber": "BB1-057",
-    "name": "Peckmon",
-    "imgUrl": "/BB1-057.png",
-    "cardType": "Digimon",
-    "color": ["Green", "Purple"],
+    "color": ["Yellow", "Black"],
     "attribute": "Vaccine",
-    "cardNumber": "BB1-057",
+    "cardNumber": "BB1-049",
     "digivolveConditions": [
-      { "color": "Green", "cost": 3, "level": 3 },
-      { "color": "Purple", "cost": 3, "level": 3 }
+      { "color": "Yellow", "cost": 5, "level": 5 },
+      { "color": "Black", "cost": 5, "level": 5 }
     ],
-    "specialDigivolve": null,
-    "stage": "Champion",
-    "digiType": ["Avian", "DC"],
-    "dp": 4000,
-    "playCost": 4,
-    "level": 4,
-    "mainEffect": "[On Play] [When Digivolving] Suspend 1 of your " +
-      "opponent's Tamers. Then, if your opponent has no unsuspended " +
-      "Tamers, trash the top 2 cards of their deck.",
-    "inheritedEffect": "[Your Turn] [Once Per Turn] When an opponent's " +
-      "Tamer suspends, gain 1 memory.",
+    "specialDigivolve": "Digivolve: from Lv.5 with [Arena] trait: 4 cost",
+    "stage": "Mega",
+    "digiType": ["Warrior", "Arena"],
+    "dp": 12000,
+    "playCost": 12,
+    "level": 6,
+    "mainEffect": "＜Collision＞ ＜Barrier＞ ＜Piercing＞ ＜Blocker＞\n[All Turns] If one of your Digimon with the [Arena] trait would leave the battle area other than by battle, by trashing the top card of your security stack, prevent it from leaving.\n[All Turns][Once Per Turn] If a card is removed from your security stack, this Digimon gets +3000 DP until the end of your opponent's turn. Then, this Digimon may battle 1 of your opponent's Digimon.",
+    "inheritedEffect": null,
     "aceEffect": null,
     "burstDigivolve": null,
     "digiXros": null,
@@ -476,232 +1171,55 @@ db.card.insertMany([
     "linkEffect": null,
     "linkRequirement": null,
     "assemblyEffect": null,
-    "restrictions": { 
-      "chinese": "Unrestricted", 
-      "english": "Unrestricted", 
-      "japanese": "Unrestricted", 
-      "korean": "Unrestricted" 
+    "restrictions": {
+      "chinese": "Unrestricted",
+      "english": "Unrestricted",
+      "japanese": "Unrestricted",
+      "korean": "Unrestricted"
     },
-    "illustrator": "Custom BB1 Art",
+    "illustrator": "Bandai",
     "_class": "com.github.wekaito.backend.models.Card"
   },
+
+  // ==========================================
+  // OPTIONS
+  // ==========================================
   {
-    "uniqueCardNumber": "BB1-065",
-    "name": "Sangloupmon",
-    "imgUrl": "/BB1-065.png",
-    "cardType": "Digimon",
+    "uniqueCardNumber": "BB1-098",
+    "name": "Deep Network",
+    "imgUrl": "/BB1-098.webp",
+    "cardType": "Option",
     "color": ["Black", "Purple"],
-    "attribute": "Virus",
-    "cardNumber": "BB1-065",
-    "digivolveConditions": [
-      { "color": "Black", "cost": 3, "level": 3 },
-      { "color": "Purple", "cost": 3, "level": 3 }
-    ],
+    "attribute": null,
+    "cardNumber": "BB1-098",
+    "digivolveConditions": [],
     "specialDigivolve": null,
-    "stage": "Champion",
-    "digiType": ["Dark Animal", "CT"],
-    "dp": 5000,
+    "stage": null,
+    "digiType": [],
+    "dp": null,
     "playCost": 5,
-    "level": 4,
-    "mainEffect": "[On Play] [When Digivolving] Trash 1 card from " +
-      "your hand. Then, you may place 1 card with the [CT] trait from " +
-      "your trash under this Digimon as its bottom digivolution " +
-      "card. If this Digimon has 3 or more digivolution cards, ＜Draw 1＞.",
-    "inheritedEffect": "[All Turns] While this Digimon has 3 or more " +
-      "digivolution cards, it has ＜Reboot＞.",
+    "level": null,
+    "mainEffect": "[Main] Add your bottom security card to your hand and place this card face up as your bottom security card. Then, you may play 1 [CT] trait Digimon card from your hand with its play cost reduced by 3.",
+    "inheritedEffect": null,
     "aceEffect": null,
     "burstDigivolve": null,
     "digiXros": null,
     "dnaDigivolve": null,
-    "securityEffect": null,
+    "securityEffect": "[Security] [All Turns][Once Per Turn] When 1 of your [CT] trait Digimon would be deleted, you may play 1 [CT] trait Digimon card from that Digimon's digivolution cards with a lower level than that Digimon without paying the cost.\n[Security] You may play 1 level 4 or lower [CT] trait Digimon card from your hand or trash without paying the cost.",
     "rule": null,
     "linkDP": null,
     "linkEffect": null,
     "linkRequirement": null,
     "assemblyEffect": null,
-    "restrictions": { 
-      "chinese": "Unrestricted", 
-      "english": "Unrestricted", 
-      "japanese": "Unrestricted", 
-      "korean": "Unrestricted" 
+    "restrictions": {
+      "chinese": "Unrestricted",
+      "english": "Unrestricted",
+      "japanese": "Unrestricted",
+      "korean": "Unrestricted"
     },
-    "illustrator": "Custom BB1 Art",
-    "_class": "com.github.wekaito.backend.models.Card"
-  },
-  {
-    "uniqueCardNumber": "BB1-066",
-    "name": "Minotarumon",
-    "imgUrl": "/BB1-066.png",
-    "cardType": "Digimon",
-    "color": ["Black", "Purple"],
-    "attribute": "Virus",
-    "cardNumber": "BB1-066",
-    "digivolveConditions": [
-      { "color": "Black", "cost": 3, "level": 3 },
-      { "color": "Purple", "cost": 3, "level": 3 }
-    ],
-    "specialDigivolve": null,
-    "stage": "Champion",
-    "digiType": ["Beastkin", "ME"],
-    "dp": 5000,
-    "playCost": 5,
-    "level": 4,
-    "mainEffect": "＜Collision＞\n" +
-      "[On Play] [When Digivolving] By trashing 1 card with the [ME] " +
-      "trait from your hand, ＜De-Digivolve 1＞ 1 of your opponent's " +
-      "Digimon.",
-    "inheritedEffect": "[When Attacking] [Once Per Turn] Reveal the " +
-      "top 3 cards of your deck. For each card with the [ME] trait, " +
-      "this Digimon gets +1000 DP until the end of your opponent's turn. " +
-      "Trash the remaining cards.",
-    "aceEffect": null,
-    "burstDigivolve": null,
-    "digiXros": null,
-    "dnaDigivolve": null,
-    "securityEffect": null,
-    "rule": null,
-    "linkDP": null,
-    "linkEffect": null,
-    "linkRequirement": null,
-    "assemblyEffect": null,
-    "restrictions": { 
-      "chinese": "Unrestricted", 
-      "english": "Unrestricted", 
-      "japanese": "Unrestricted", 
-      "korean": "Unrestricted" 
-    },
-    "illustrator": "Custom BB1 Art",
-    "_class": "com.github.wekaito.backend.models.Card"
-  },
-  {
-    "uniqueCardNumber": "BB1-067",
-    "name": "Deputymon",
-    "imgUrl": "/BB1-067.png",
-    "cardType": "Digimon",
-    "color": ["Black"],
-    "attribute": "Vaccine",
-    "cardNumber": "BB1-067",
-    "digivolveConditions": [
-      { "color": "Black", "cost": 2, "level": 3 }
-    ],
-    "specialDigivolve": null,
-    "stage": "Champion",
-    "digiType": ["Mutant"],
-    "dp": 6000,
-    "playCost": 6,
-    "level": 4,
-    "mainEffect": "[On Play] [When Digivolving] By placing 1 card " +
-      "with the [Three Musketeers] trait from your hand or trash under " +
-      "1 of your Digimon as its bottom digivolution card, this Digimon's " +
-      "DP cannot be reduced by your opponent's effects until the end of " +
-      "their turn.",
-    "inheritedEffect": "[Your Turn] [Once Per Turn] When cards are " +
-      "placed in this Digimon's digivolution cards, ＜Draw 1＞.",
-    "aceEffect": null,
-    "burstDigivolve": null,
-    "digiXros": null,
-    "dnaDigivolve": null,
-    "securityEffect": null,
-    "rule": "This card is also treated as having the [Three Musketeers] trait.",
-    "linkDP": null,
-    "linkEffect": null,
-    "linkRequirement": null,
-    "assemblyEffect": null,
-    "restrictions": { 
-      "chinese": "Unrestricted", 
-      "english": "Unrestricted", 
-      "japanese": "Unrestricted", 
-      "korean": "Unrestricted" 
-    },
-    "illustrator": "Custom BB1 Art",
-    "_class": "com.github.wekaito.backend.models.Card"
-  },
-  {
-    "uniqueCardNumber": "BB1-076",
-    "name": "Seasamon",
-    "imgUrl": "/BB1-076.png",
-    "cardType": "Digimon",
-    "color": ["Purple", "Green"],
-    "attribute": "Vaccine",
-    "cardNumber": "BB1-076",
-    "digivolveConditions": [
-      { "color": "Green", "cost": 2, "level": 3 },
-      { "color": "Purple", "cost": 2, "level": 3 }
-    ],
-    "specialDigivolve": null,
-    "stage": "Champion",
-    "digiType": ["Holy Beast", "Re;Ware", "Girlies"],
-    "dp": 6000,
-    "playCost": 5,
-    "level": 4,
-    "mainEffect": "[When Moving] [When Digivolving] If a Digimon " +
-      "with the [Re;Ware] trait and/or [Girlies] trait is in this " +
-      "Digimon's Digivolution cards, then you may play 1 tamer with " +
-      "the [Re;Ware] trait and/or [Girlies] trait from your hand " +
-      "without paying the cost. Then, you may place 1 card with the " +
-      "[Re;Ware] trait and/or [Girlies] trait from your hand or trash " +
-      "as this Digimon's bottom Digivolution card.",
-    "inheritedEffect": "[Main] [Once Per Turn] By suspending 1 " +
-      "Digimon or Tamer with the [Re;Ware] trait and/or [Girlies] " +
-      "trait, Gain 1 Memory.",
-    "aceEffect": null,
-    "burstDigivolve": null,
-    "digiXros": null,
-    "dnaDigivolve": null,
-    "securityEffect": null,
-    "rule": null,
-    "linkDP": null,
-    "linkEffect": null,
-    "linkRequirement": null,
-    "assemblyEffect": null,
-    "restrictions": { 
-      "chinese": "Unrestricted", 
-      "english": "Unrestricted", 
-      "japanese": "Unrestricted", 
-      "korean": "Unrestricted" 
-    },
-    "illustrator": "Custom BB1 Art",
-    "_class": "com.github.wekaito.backend.models.Card"
-  },
-  {
-    "uniqueCardNumber": "BB1-077",
-    "name": "Bakemon",
-    "imgUrl": "/BB1-077.png",
-    "cardType": "Digimon",
-    "color": ["Purple"],
-    "attribute": "Virus",
-    "cardNumber": "BB1-077",
-    "digivolveConditions": [
-      { "color": "Purple", "cost": 2, "level": 3 }
-    ],
-    "specialDigivolve": null,
-    "stage": "Champion",
-    "digiType": ["Ghost", "CT"],
-    "dp": 4000,
-    "playCost": 4,
-    "level": 4,
-    "mainEffect": "[Main] [Once Per Turn] You may play or use 1 card " +
-      "with the [CT] trait from your hand with its play cost or use " +
-      "cost reduced by 2.",
-    "inheritedEffect": "[Your Turn] [Once Per Turn] When you use an " +
-      "Option card with the [CT] trait, ＜Draw 1＞.",
-    "aceEffect": null,
-    "burstDigivolve": null,
-    "digiXros": null,
-    "dnaDigivolve": null,
-    "securityEffect": null,
-    "rule": null,
-    "linkDP": null,
-    "linkEffect": null,
-    "linkRequirement": null,
-    "assemblyEffect": null,
-    "restrictions": { 
-      "chinese": "Unrestricted", 
-      "english": "Unrestricted", 
-      "japanese": "Unrestricted", 
-      "korean": "Unrestricted" 
-    },
-    "illustrator": "Custom BB1 Art",
+    "illustrator": "Bandai",
     "_class": "com.github.wekaito.backend.models.Card"
   }
 ]);
+
+print("Successfully imported BB1 Custom Cards into singular card collection.");

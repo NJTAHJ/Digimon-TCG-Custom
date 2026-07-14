@@ -19,6 +19,7 @@ import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator; // Added Import
 import java.util.List;
 
 @Service
@@ -31,6 +32,39 @@ public class CardService {
     private final CardRepo cardRepo;
 
     private final List<Card> cardCollection;
+
+    // Alphanumeric Natural Comparator to keep BT2 before BT10, and BB1-001 before BB1-010
+    private static final Comparator<Card> NATURAL_CARD_ORDER = (c1, c2) -> {
+        String s1 = c1.uniqueCardNumber();
+        String s2 = c2.uniqueCardNumber();
+        
+        if (s1.equals(s2)) return 0;
+        
+        int i = 0, j = 0;
+        while (i < s1.length() && j < s2.length()) {
+            char char1 = s1.charAt(i);
+            char char2 = s2.charAt(j);
+            
+            if (Character.isDigit(char1) && Character.isDigit(char2)) {
+                StringBuilder num1 = new StringBuilder();
+                StringBuilder num2 = new StringBuilder();
+                while (i < s1.length() && Character.isDigit(s1.charAt(i))) {
+                    num1.append(s1.charAt(i++));
+                }
+                while (j < s2.length() && Character.isDigit(s2.charAt(j))) {
+                    num2.append(s2.charAt(j++));
+                }
+                int n1 = Integer.parseInt(num1.toString());
+                int n2 = Integer.parseInt(num2.toString());
+                if (n1 != n2) return Integer.compare(n1, n2);
+            } else {
+                if (char1 != char2) return Character.compare(char1, char2);
+                i++;
+                j++;
+            }
+        }
+        return Integer.compare(s1.length(), s2.length());
+    };
 
     private final Card fallbackCard = new Card(
             "1110101", // fallbackCardNumber defined in useGeneralStates.ts
@@ -66,7 +100,11 @@ public class CardService {
     private static final Gson gson = new Gson();
 
     public List<Card> getCards() {
-        if (cardCollection.isEmpty()) return cardRepo.findAll();
+        if (cardCollection.isEmpty()) {
+            List<Card> allCards = cardRepo.findAll();
+            allCards.sort(NATURAL_CARD_ORDER); // Sort database fallback list naturally
+            return allCards;
+        }
         else return cardCollection;
     }
 
@@ -177,6 +215,8 @@ public class CardService {
                 }
             }
         }
+
+        cards.sort(NATURAL_CARD_ORDER); // Sort the entire merged list naturally before database save/cache population
 
         this.cardRepo.deleteAll();
         this.cardRepo.saveAll(cards);

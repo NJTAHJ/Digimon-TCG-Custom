@@ -1,3 +1,6 @@
+# Persistent local MongoDB data directory
+mongodb_data/
+
 /.idea/
 *.iml
 /node_modules/
@@ -153,7 +156,7 @@ dmypy.json
 .pyre/
 
 # pytype static type analyzer
-.pytype/
+.pyre/
 
 # Cython debug symbols
 cython_debug/
