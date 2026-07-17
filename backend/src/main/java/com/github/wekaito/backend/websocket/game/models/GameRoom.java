@@ -51,7 +51,7 @@ public class GameRoom {
     }
     
     public void removeSession(WebSocketSession session) {
-        sessions.remove(session);
+        sessions.removeIf(s -> s.getId().equals(session.getId()));
     }
 
     public void updateLastHearBeat(WebSocketSession session) {
@@ -78,25 +78,37 @@ public class GameRoom {
                 (now - lastHeartBeatReceivedPlayer2 >= HEARTBEAT_TIMEOUT_MS);
     }
 
-    public void sendMessagesToAll(String message) {
+    public boolean areBothPlayersConnected() {
+        boolean p1Connected = false;
+        boolean p2Connected = false;
         for (WebSocketSession s : sessions) {
-            if (s.isOpen()) {
-                try {
-                    s.sendMessage(new TextMessage(message));
-                } catch (IOException e) {
-                    // Session is broken, will be cleaned up by the cleanup scheduler
-                }
+            if (!s.isOpen() || s.getPrincipal() == null) continue;
+            String name = s.getPrincipal().getName();
+            if (name.equals(player1.username())) p1Connected = true;
+            if (name.equals(player2.username())) p2Connected = true;
+        }
+        return p1Connected && p2Connected;
+    }
+
+    public void sendMessagesToAll(String message) {
+        sessions.removeIf(s -> !s.isOpen());
+        for (WebSocketSession s : sessions) {
+            try {
+                s.sendMessage(new TextMessage(message));
+            } catch (IOException e) {
+                // Ignore, will be cleaned up
             }
         }
     }
 
     public void sendMessageToOtherSessions(WebSocketSession sender, String message) {
+        sessions.removeIf(s -> !s.isOpen());
         for (WebSocketSession s : sessions) {
-            if (s.isOpen() && !s.getId().equals(sender.getId())) {
+            if (!s.getId().equals(sender.getId())) {
                 try {
                     s.sendMessage(new TextMessage(message));
                 } catch (IOException e) {
-                    // Session is broken, will be cleaned up by the cleanup scheduler
+                    // Ignore, will be cleaned up
                 }
             }
         }
