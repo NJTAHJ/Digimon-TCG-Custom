@@ -315,8 +315,9 @@ public class GameWebSocket extends TextWebSocketHandler {
     }
 
     private String mapServerToClient(String serverPosition, String destUsername, GameRoom gameRoom) {
-        // Force spectators to inherit Player 2's perspective so they match the client's fallback view
-        boolean isPlayer1View = gameRoom.getPlayer1().username().equals(destUsername);
+        // Force spectators to inherit Player 1's perspective to match the client's hardcoded P1 fallback
+        boolean isPlayer1View = gameRoom.getPlayer1().username().equals(destUsername) || 
+                                (!gameRoom.getPlayer2().username().equals(destUsername)); 
         
         return switch (serverPosition) {
             case "player1Hand" -> isPlayer1View ? "myHand" : "opponentHand";
@@ -537,13 +538,13 @@ public class GameWebSocket extends TextWebSocketHandler {
                 finalFrom = getOppositePosition(from);
                 finalTo = getOppositePosition(to);
             } else {
-                // Spectators view from Player 2's fallback perspective
+                // Spectators view from Player 1's perspective (Since frontend hardcodes myName = p1)
                 if (isSenderPlayer1) {
-                    finalFrom = getOppositePosition(from);
-                    finalTo = getOppositePosition(to);
-                } else {
                     finalFrom = from;
                     finalTo = to;
+                } else {
+                    finalFrom = getOppositePosition(from);
+                    finalTo = getOppositePosition(to);
                 }
             }
 
@@ -742,11 +743,11 @@ public class GameWebSocket extends TextWebSocketHandler {
                 finalTo = getOppositePosition(to);
             } else {
                 if (isSenderPlayer1) {
-                    finalFrom = getOppositePosition(from);
-                    finalTo = getOppositePosition(to);
-                } else {
                     finalFrom = from;
                     finalTo = to;
+                } else {
+                    finalFrom = getOppositePosition(from);
+                    finalTo = getOppositePosition(to);
                 }
             }
 
