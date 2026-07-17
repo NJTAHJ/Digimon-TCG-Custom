@@ -189,7 +189,7 @@ export default function GamePage() {
     const backend = "ontouchstart" in window ? TouchBackend : HTML5Backend;
 
     const gameContent = (
-        <BoardLayout height={height}>
+        <BoardLayout height={height} style={isSpectator ? { pointerEvents: "none" } : {}}>
             <SettingsContainer>
                 <SoundBar iconFontSize={iconWidth}>
                     <a
@@ -333,6 +333,7 @@ const SettingsContainer = styled.div`
     grid-column: 1 / 9;
     grid-row: 1 / 3;
     z-index: 1;
+    pointer-events: auto;
 `;
 
 const StyledIconButton = styled(IconButton)`
@@ -361,4 +362,5 @@ const ChatAndCardDialogContainerDiv = styled.div`
     filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.5));
 
     z-index: 20;
+    pointer-events: auto;
 `;
