@@ -118,6 +118,35 @@ export const amonToken: CardType = {
     illustrator: "Template By SergioGranSol",
 };
 
+// ✅ FIXED: Cleaned up null properties to satisfy TypeScript compiler
+export const stageHandsToken: CardType = {
+    imgUrl: "/BB1-TOKEN-STAGE.webp", 
+    uniqueCardNumber: "BB1-TOKEN-STAGE",
+    cardNumber: "",
+    color: ["Purple"],
+    cardType: "Digimon",
+    dp: 4000,
+    level: 4,
+    name: "Stage Hands",
+    mainEffect: "＜Guard＞\n• This card can be used as a Stage hand token\n• Tokens cannot be included in decks.\n• Tokens can't digivolve or be used as digivolution cards.\n• Tokens are removed from the game when they leave play.",
+    restrictions: emptyRestrictions,
+    illustrator: "Beyond The Bonds",
+};
+
+// ✅ FIXED: Cleaned up null properties to satisfy TypeScript compiler
+export const foolToken: CardType = {
+    imgUrl: "/BB1-TOKEN-FOOL.webp", 
+    uniqueCardNumber: "BB1-TOKEN-FOOL",
+    cardNumber: "",
+    color: ["Purple"],
+    cardType: "Digimon",
+    dp: 3000,
+    name: "Fool",
+    mainEffect: "＜Blocker＞ ＜Retaliation＞\n• This card can be used as a Stage hand token\n• Tokens cannot be included in decks.\n• Tokens can't digivolve or be used as digivolution cards.\n• Tokens are removed from the game when they leave play.",
+    restrictions: emptyRestrictions,
+    illustrator: "Beyond The Bonds",
+};
+
 export const voleeToken: CardType = {
     imgUrl: VoleeUndZerdruecken,
     uniqueCardNumber: "EX7-058-TOKEN",
@@ -265,6 +294,7 @@ export const tokenCollection = [
     athoreneporToken,
     diaboromonToken,
     familiarToken,
+    foolToken, // ✅ Fool safely added!
     fujitsumonToken,
     gyuukimonToken,
     hinukamuyToken,
@@ -272,6 +302,7 @@ export const tokenCollection = [
     petrificationToken,
     pipeFoxToken,
     rapidmonToken,
+    stageHandsToken,
     taomonToken,
     ukaNoMitamaToken,
     umonToken,
