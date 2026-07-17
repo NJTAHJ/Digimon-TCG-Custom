@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.security.Principal;
 import java.security.SecureRandom;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.stream.Collectors;
 
@@ -31,7 +32,8 @@ public class GameRoom {
     private static final SecureRandom secureRand = new SecureRandom();
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    private final Set<WebSocketSession> sessions = new HashSet<>();
+    // ✅ FIXED: Initialized as a thread-safe Concurrent Set to prevent ConcurrentModificationExceptions
+    private final Set<WebSocketSession> sessions = ConcurrentHashMap.newKeySet();
     private final List<ScheduledFuture<?>> scheduledTasks = new ArrayList<>();
 
     private Boolean player1Mulligan;
@@ -93,10 +95,13 @@ public class GameRoom {
     public void sendMessagesToAll(String message) {
         sessions.removeIf(s -> !s.isOpen());
         for (WebSocketSession s : sessions) {
-            try {
-                s.sendMessage(new TextMessage(message));
-            } catch (IOException e) {
-                // Ignore, will be cleaned up
+            // ✅ FIXED: Synchronized on the session object to prevent TEXT_PARTIAL_WRITING errors
+            synchronized (s) {
+                try {
+                    s.sendMessage(new TextMessage(message));
+                } catch (IOException e) {
+                    // Ignore, will be cleaned up
+                }
             }
         }
     }
@@ -105,10 +110,13 @@ public class GameRoom {
         sessions.removeIf(s -> !s.isOpen());
         for (WebSocketSession s : sessions) {
             if (!s.getId().equals(sender.getId())) {
-                try {
-                    s.sendMessage(new TextMessage(message));
-                } catch (IOException e) {
-                    // Ignore, will be cleaned up
+                // ✅ FIXED: Synchronized on the session object to prevent TEXT_PARTIAL_WRITING errors
+                synchronized (s) {
+                    try {
+                        s.sendMessage(new TextMessage(message));
+                    } catch (IOException e) {
+                        // Ignore, will be cleaned up
+                    }
                 }
             }
         }
