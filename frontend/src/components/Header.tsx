@@ -8,8 +8,8 @@ export default function Header() {
 
     return (
         <Headline>
-            Project {location === "/login" && <br/>}
-            <Headline2 style={{fontSize: "60px"}}>Drasil</Headline2>
+            Bonds {location === "/login" && <br/>}
+            <Headline2 style={{fontSize: "60px"}}>Beyond</Headline2>
         </Headline>
     )
 }
