@@ -315,6 +315,7 @@ public class GameWebSocket extends TextWebSocketHandler {
     }
 
     private String mapServerToClient(String serverPosition, String destUsername, GameRoom gameRoom) {
+        // Force spectators to inherit Player 2's perspective so they match the client's fallback view
         boolean isPlayer1View = gameRoom.getPlayer1().username().equals(destUsername);
         
         return switch (serverPosition) {
@@ -634,7 +635,7 @@ public class GameWebSocket extends TextWebSocketHandler {
             }
             if (gameRoom.getBoardState() != null) {
                 String boardStateJson = getBoardStateJson(gameRoom);
-                sendTextMessage(session, "[DISTRIBUTE_CARDS]:" + boardStateJson));
+                sendTextMessage(session, "[DISTRIBUTE_CARDS]:" + boardStateJson);
                 
                 String[] chatHistory = gameRoom.getChat();
                 if (chatHistory != null && chatHistory.length > 0) {
@@ -918,7 +919,7 @@ public class GameWebSocket extends TextWebSocketHandler {
         if (!gameRoom.hasFullConnection() || roomMessage.split(":").length < 2) return;
         String[] parts = roomMessage.split(":", 2);
         int memory = Integer.parseInt(parts[1]) * -1;
-        BoardState boardState = boardState = gameRoom.getBoardState();
+        BoardState boardState = gameRoom.getBoardState();
         if (boardState != null) {
             String currentPlayer = session.getPrincipal() != null ? session.getPrincipal().getName() : null;
             if (currentPlayer != null) {
