@@ -553,7 +553,7 @@ export default function Lobby() {
                                         .sort((a, b) => a.name.localeCompare(b.name))
                                         .map((room) => (
                                             <RoomTile key={room.id}>
-                                                <StyledSpan>{room.name}</StyledSpan>
+                                                <StyledSpan>{room.name} <span style={{fontSize: "16px", color: "gray", marginLeft: "8px"}}>({room.players.length}/5)</span></StyledSpan>
                                                 <StyledSpan>
                                                     <span>{room.hostName}</span>
                                                     <img
