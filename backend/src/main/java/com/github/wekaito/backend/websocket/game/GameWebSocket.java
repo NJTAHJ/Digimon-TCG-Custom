@@ -258,6 +258,27 @@ public class GameWebSocket extends TextWebSocketHandler {
         };
     }
 
+    private String mapServerToClient(String serverPosition, String destUsername, GameRoom gameRoom) {
+        // Force spectators to inherit Player 1's perspective so they sit on P1's side of the table
+        boolean isPlayer1View = gameRoom.getPlayer1().username().equals(destUsername) || 
+                                (!gameRoom.getPlayer2().username().equals(destUsername)); 
+        
+        if (isPlayer1View) {
+            if (serverPosition.startsWith("player1")) {
+                return serverPosition.replaceFirst("player1", "my");
+            } else if (serverPosition.startsWith("player2")) {
+                return serverPosition.replaceFirst("player2", "opponent");
+            }
+        } else { // Player 2 View
+            if (serverPosition.startsWith("player2")) {
+                return serverPosition.replaceFirst("player2", "my");
+            } else if (serverPosition.startsWith("player1")) {
+                return serverPosition.replaceFirst("player1", "opponent");
+            }
+        }
+        return serverPosition;
+    }
+
     private void updateBoardStateForStackMove(GameRoom gameRoom, String cardId, String fromClient, String toClient, String topOrBottom, String facing, String username) {
         BoardState boardState = gameRoom.getBoardState();
         if (boardState == null) return;
@@ -360,6 +381,39 @@ public class GameWebSocket extends TextWebSocketHandler {
 
         toList.add(cardToMove);
         boardState.setFieldByName(toServer, toList);
+    }
+
+    private void broadcastGameAction(GameRoom gameRoom, WebSocketSession sender, String actionType, String cardId, String fromServer, String toServer, String... extra) {
+        for (WebSocketSession s : gameRoom.getSessions()) {
+            if (!s.isOpen()) continue;
+            if (s.getId().equals(sender.getId())) continue;
+
+            String destUsername = s.getPrincipal() != null ? s.getPrincipal().getName() : "";
+            String relativeFrom = mapServerToClient(fromServer, destUsername, gameRoom);
+            String relativeTo = mapServerToClient(toServer, destUsername, gameRoom);
+
+            try {
+                if (actionType.equals("MOVE_CARD")) {
+                    s.sendMessage(new TextMessage("[MOVE_CARD]:" + cardId + ":" + relativeFrom + ":" + relativeTo));
+                } else if (actionType.equals("MOVE_CARD_TO_STACK")) {
+                    String topOrBottom = extra[0];
+                    String facing = extra[1];
+                    s.sendMessage(new TextMessage("[MOVE_CARD_TO_STACK]:" + topOrBottom + ":" + cardId + ":" + relativeFrom + ":" + relativeTo + ":" + facing));
+                } else if (actionType.equals("TILT_CARD")) {
+                    s.sendMessage(new TextMessage("[TILT_CARD]:" + cardId + ":" + relativeTo));
+                } else if (actionType.equals("FLIP_CARD")) {
+                    s.sendMessage(new TextMessage("[FLIP_CARD]:" + cardId + ":" + relativeTo));
+                } else if (actionType.equals("SET_MODIFIERS")) {
+                    String modifiersJson = extra[0];
+                    s.sendMessage(new TextMessage("[SET_MODIFIERS]:" + cardId + ":" + relativeTo + ":" + modifiersJson));
+                } else if (actionType.equals("CREATE_TOKEN")) {
+                    String cardName = extra[0];
+                    s.sendMessage(new TextMessage("[CREATE_TOKEN]:" + cardId + ":" + cardName + ":" + relativeTo));
+                }
+            } catch (IOException e) {
+                // ignore
+            }
+        }
     }
 
     private void computeGameRoom(WebSocketSession session, String gameId) throws IOException {
@@ -506,7 +560,25 @@ public class GameWebSocket extends TextWebSocketHandler {
         String from = parts[1];
         String to = parts[2];
         String isEffect = parts[3];
-        gameRoom.sendMessageToOtherSessions(session,"[ATTACK]:" + getOppositePosition(from) + ":" + getOppositePosition(to) + ":" + isEffect);
+
+        String username = Objects.requireNonNull(session.getPrincipal()).getName();
+        String fromServer = mapClientToServer(from, username, gameRoom);
+        String toServer = mapClientToServer(to, username, gameRoom);
+
+        for (WebSocketSession s : gameRoom.getSessions()) {
+            if (!s.isOpen()) continue;
+            if (s.getId().equals(session.getId())) continue;
+
+            String destUsername = s.getPrincipal() != null ? s.getPrincipal().getName() : "";
+            String relativeFrom = mapServerToClient(fromServer, destUsername, gameRoom);
+            String relativeTo = mapServerToClient(toServer, destUsername, gameRoom);
+
+            try {
+                s.sendMessage(new TextMessage("[ATTACK]:" + relativeFrom + ":" + relativeTo + ":" + isEffect));
+            } catch (IOException e) {
+                // ignore
+            }
+        }
     }
 
     private void handleSendMoveCard(GameRoom gameRoom, WebSocketSession session, String roomMessage) {
@@ -518,8 +590,10 @@ public class GameWebSocket extends TextWebSocketHandler {
         String currentPlayer = session.getPrincipal() != null ? session.getPrincipal().getName() : null;
         if (currentPlayer != null) {
             updateBoardStateForCardMove(gameRoom, cardId, from, to, currentPlayer);
+            String fromServer = mapClientToServer(from, currentPlayer, gameRoom);
+            String toServer = mapClientToServer(to, currentPlayer, gameRoom);
+            broadcastGameAction(gameRoom, session, "MOVE_CARD", cardId, fromServer, toServer);
         }
-        gameRoom.sendMessageToOtherSessions(session, "[MOVE_CARD]:" + cardId + ":" + getOppositePosition(from) + ":" + getOppositePosition(to));
     }
 
     private void handleSendSetModifiers(GameRoom gameRoom, WebSocketSession session, String roomMessage) {
@@ -529,8 +603,12 @@ public class GameWebSocket extends TextWebSocketHandler {
         String location = parts[3];
         String modifiersJson = String.join(":", Arrays.copyOfRange(parts, 4, parts.length));
 
-        updateCardModifiers(session, gameRoom, cardId, location, modifiersJson);
-        gameRoom.sendMessageToOtherSessions(session, "[SET_MODIFIERS]:" + cardId + ":" + getOppositePosition(location) + ":" + modifiersJson);
+        String currentPlayer = session.getPrincipal() != null ? session.getPrincipal().getName() : null;
+        if (currentPlayer != null) {
+            updateCardModifiers(session, gameRoom, cardId, location, modifiersJson);
+            String locationServer = mapClientToServer(location, currentPlayer, gameRoom);
+            broadcastGameAction(gameRoom, session, "SET_MODIFIERS", cardId, null, locationServer, modifiersJson);
+        }
     }
 
     private void handleSendMoveToStack(GameRoom gameRoom, WebSocketSession session, String roomMessage) {
@@ -544,8 +622,10 @@ public class GameWebSocket extends TextWebSocketHandler {
         String currentPlayer = session.getPrincipal() != null ? session.getPrincipal().getName() : null;
         if (currentPlayer != null) {
             updateBoardStateForStackMove(gameRoom, cardId, from, to, topOrBottom, facing, currentPlayer);
+            String fromServer = mapClientToServer(from, currentPlayer, gameRoom);
+            String toServer = mapClientToServer(to, currentPlayer, gameRoom);
+            broadcastGameAction(gameRoom, session, "MOVE_CARD_TO_STACK", cardId, fromServer, toServer, topOrBottom, facing);
         }
-        gameRoom.sendMessageToOtherSessions(session, "[MOVE_CARD_TO_STACK]:" + topOrBottom + ":" + cardId + ":" + getOppositePosition(from) + ":" + getOppositePosition(to) + ":" + facing);
     }
 
     private void handleTiltCard(GameRoom gameRoom, WebSocketSession session, String roomMessage) {
@@ -554,8 +634,12 @@ public class GameWebSocket extends TextWebSocketHandler {
         String cardId = parts[2];
         String location = parts[3];
 
-        updateCardTiltStatus(session, gameRoom, cardId, location);
-        gameRoom.sendMessageToOtherSessions(session, "[TILT_CARD]:" + cardId + ":" + getOppositePosition(location));
+        String currentPlayer = session.getPrincipal() != null ? session.getPrincipal().getName() : null;
+        if (currentPlayer != null) {
+            updateCardTiltStatus(session, gameRoom, cardId, location);
+            String locationServer = mapClientToServer(location, currentPlayer, gameRoom);
+            broadcastGameAction(gameRoom, session, "TILT_CARD", cardId, null, locationServer);
+        }
     }
 
     private void handleFlipCard(GameRoom gameRoom, WebSocketSession session, String roomMessage) {
@@ -564,8 +648,12 @@ public class GameWebSocket extends TextWebSocketHandler {
         String cardId = parts[1];
         String location = parts[2];
 
-        updateCardFaceStatus(session, gameRoom, cardId, location);
-        gameRoom.sendMessageToOtherSessions(session, "[FLIP_CARD]:" + cardId + ":" + getOppositePosition(location));
+        String currentPlayer = session.getPrincipal() != null ? session.getPrincipal().getName() : null;
+        if (currentPlayer != null) {
+            updateCardFaceStatus(session, gameRoom, cardId, location);
+            String locationServer = mapClientToServer(location, currentPlayer, gameRoom);
+            broadcastGameAction(gameRoom, session, "FLIP_CARD", cardId, null, locationServer);
+        }
     }
 
     private void updateCardTiltStatus(WebSocketSession session, GameRoom gameRoom, String cardId, String location) {
@@ -645,8 +733,9 @@ public class GameWebSocket extends TextWebSocketHandler {
                     List<GameCard> currentList = boardState.getFieldByName(serverPosition);
                     currentList.add(card);
                     boardState.setFieldByName(serverPosition, currentList);
+                    
+                    broadcastGameAction(gameRoom, session, "CREATE_TOKEN", card.getId().toString(), null, serverPosition, card.getName());
                 }
-                gameRoom.sendMessageToOtherSessions(session, "[CREATE_TOKEN]:" + card.getId() + ":" + card.getName() + ":" + getOppositePosition(targetPosition));
             } catch (Exception e) {
                 System.err.println("ERROR in handleCreateToken: " + e.getMessage());
             }
