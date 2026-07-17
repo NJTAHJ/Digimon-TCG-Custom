@@ -16,6 +16,10 @@ import AthoRenePor from "../assets/tokens/ARP_Token.webp";
 import Petrification from "../assets/tokens/Petrification_Token.webp";
 import Hinukamuy from "../assets/tokens/Hinukamuy.png";
 
+// ✅ FIXED: Explicitly imported your new webp assets from the assets/tokens directory!
+import StageHands from "../assets/tokens/BB1-TOKEN-STAGE.webp";
+import Fool from "../assets/tokens/BB1-TOKEN-FOOL.webp";
+
 import { CardType } from "./types.ts";
 
 const tokenEffect = (digimon: string): string =>
@@ -118,9 +122,9 @@ export const amonToken: CardType = {
     illustrator: "Template By SergioGranSol",
 };
 
-// ✅ FIXED: Cleaned up null properties to satisfy TypeScript compiler
+// ✅ FIXED: Linked the image to your imported 'StageHands' webp asset!
 export const stageHandsToken: CardType = {
-    imgUrl: "/BB1-TOKEN-STAGE.webp", 
+    imgUrl: StageHands, 
     uniqueCardNumber: "BB1-TOKEN-STAGE",
     cardNumber: "",
     color: ["Purple"],
@@ -133,9 +137,9 @@ export const stageHandsToken: CardType = {
     illustrator: "Beyond The Bonds",
 };
 
-// ✅ FIXED: Cleaned up null properties to satisfy TypeScript compiler
+// ✅ FIXED: Linked the image to your imported 'Fool' webp asset!
 export const foolToken: CardType = {
-    imgUrl: "/BB1-TOKEN-FOOL.webp", 
+    imgUrl: Fool, 
     uniqueCardNumber: "BB1-TOKEN-FOOL",
     cardNumber: "",
     color: ["Purple"],
@@ -294,7 +298,7 @@ export const tokenCollection = [
     athoreneporToken,
     diaboromonToken,
     familiarToken,
-    foolToken, // ✅ Fool safely added!
+    foolToken, // ✅ Fool added here!
     fujitsumonToken,
     gyuukimonToken,
     hinukamuyToken,
@@ -302,7 +306,7 @@ export const tokenCollection = [
     petrificationToken,
     pipeFoxToken,
     rapidmonToken,
-    stageHandsToken,
+    stageHandsToken, // ✅ Stage Hands added here!
     taomonToken,
     ukaNoMitamaToken,
     umonToken,
