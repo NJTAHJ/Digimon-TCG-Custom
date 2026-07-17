@@ -94,7 +94,6 @@ public class GameWebSocket extends TextWebSocketHandler {
                                gameRoom.getPlayer2().username().equals(username);
             
             if (!isPlayer) {
-                // Ignore any state-changing requests from spectators. They can only heartbeat or chat.
                 if (!roomMessage.startsWith("/heartbeat") && !roomMessage.startsWith("/chatMessage:")) {
                     return;
                 }
@@ -254,152 +253,7 @@ public class GameWebSocket extends TextWebSocketHandler {
             case "myLink14" -> isPlayer1 ? "player1Link14" : "player2Link14";
             case "myLink15" -> isPlayer1 ? "player1Link15" : "player2Link15";
             case "myLink16" -> isPlayer1 ? "player1Link16" : "player2Link16";
-
-            case "opponentHand" -> isPlayer1 ? "player2Hand" : "player1Hand";
-            case "opponentDeckField" -> isPlayer1 ? "player2Deck" : "player1Deck";
-            case "opponentEggDeck" -> isPlayer1 ? "player2EggDeck" : "player1EggDeck";
-            case "opponentTrash" -> isPlayer1 ? "player2Trash" : "player1Trash";
-            case "opponentSecurity" -> isPlayer1 ? "player2Security" : "player1Security";
-            case "opponentReveal" -> isPlayer1 ? "player2Reveal" : "player1Reveal";
-            case "opponentBreedingArea" -> isPlayer1 ? "player2BreedingArea" : "player1BreedingArea";
-            case "opponentDigi1" -> isPlayer1 ? "player2Digi1" : "player1Digi1";
-            case "opponentDigi2" -> isPlayer1 ? "player2Digi2" : "player1Digi2";
-            case "opponentDigi3" -> isPlayer1 ? "player2Digi3" : "player1Digi3";
-            case "opponentDigi4" -> isPlayer1 ? "player2Digi4" : "player1Digi4";
-            case "opponentDigi5" -> isPlayer1 ? "player2Digi5" : "player1Digi5";
-            case "opponentDigi6" -> isPlayer1 ? "player2Digi6" : "player1Digi6";
-            case "opponentDigi7" -> isPlayer1 ? "player2Digi7" : "player1Digi7";
-            case "opponentDigi8" -> isPlayer1 ? "player2Digi8" : "player1Digi8";
-            case "opponentDigi9" -> isPlayer1 ? "player2Digi9" : "player1Digi9";
-            case "opponentDigi10" -> isPlayer1 ? "player2Digi10" : "player1Digi10";
-            case "opponentDigi11" -> isPlayer1 ? "player2Digi11" : "player1Digi11";
-            case "opponentDigi12" -> isPlayer1 ? "player2Digi12" : "player1Digi12";
-            case "opponentDigi13" -> isPlayer1 ? "player2Digi13" : "player1Digi13";
-            case "opponentDigi14" -> isPlayer1 ? "player2Digi14" : "player1Digi14";
-            case "opponentDigi15" -> isPlayer1 ? "player2Digi15" : "player1Digi15";
-            case "opponentDigi16" -> isPlayer1 ? "player2Digi16" : "player1Digi16";
-            case "opponentDigi17" -> isPlayer1 ? "player2Digi17" : "player1Digi17";
-            case "opponentDigi18" -> isPlayer1 ? "player2Digi18" : "player1Digi18";
-            case "opponentDigi19" -> isPlayer1 ? "player2Digi19" : "player1Digi19";
-            case "opponentDigi20" -> isPlayer1 ? "player2Digi20" : "player1Digi20";
-            case "opponentDigi21" -> isPlayer1 ? "player2Digi21" : "player1Digi21";
-            case "opponentLink1" -> isPlayer1 ? "player2Link1" : "player1Link1";
-            case "opponentLink2" -> isPlayer1 ? "player2Link2" : "player1Link2";
-            case "opponentLink3" -> isPlayer1 ? "player2Link3" : "player1Link3";
-            case "opponentLink4" -> isPlayer1 ? "player2Link4" : "player1Link4";
-            case "opponentLink5" -> isPlayer1 ? "player2Link5" : "player1Link5";
-            case "opponentLink6" -> isPlayer1 ? "player2Link6" : "player1Link6";
-            case "opponentLink7" -> isPlayer1 ? "player2Link7" : "player1Link7";
-            case "opponentLink8" -> isPlayer1 ? "player2Link8" : "player1Link8";
-            case "opponentLink9" -> isPlayer1 ? "player2Link9" : "player1Link9";
-            case "opponentLink10" -> isPlayer1 ? "player2Link10" : "player1Link10";
-            case "opponentLink11" -> isPlayer1 ? "player2Link11" : "player1Link11";
-            case "opponentLink12" -> isPlayer1 ? "player2Link12" : "player1Link12";
-            case "opponentLink13" -> isPlayer1 ? "player2Link13" : "player1Link13";
-            case "opponentLink14" -> isPlayer1 ? "player2Link14" : "player1Link14";
-            case "opponentLink15" -> isPlayer1 ? "player2Link15" : "player1Link15";
-            case "opponentLink16" -> isPlayer1 ? "player2Link16" : "player1Link16";
-
             default -> clientPosition;
-        };
-    }
-
-    private String mapServerToClient(String serverPosition, String destUsername, GameRoom gameRoom) {
-        // Force spectators to inherit Player 2's perspective so they match the client's fallback view
-        boolean isPlayer1View = gameRoom.getPlayer1().username().equals(destUsername);
-        
-        return switch (serverPosition) {
-            case "player1Hand" -> isPlayer1View ? "myHand" : "opponentHand";
-            case "player1Deck" -> isPlayer1View ? "myDeckField" : "opponentDeckField";
-            case "player1EggDeck" -> isPlayer1View ? "myEggDeck" : "opponentEggDeck";
-            case "player1Trash" -> isPlayer1View ? "myTrash" : "opponentTrash";
-            case "player1Security" -> isPlayer1View ? "mySecurity" : "opponentSecurity";
-            case "player1Reveal" -> isPlayer1View ? "myReveal" : "opponentReveal";
-            case "player1BreedingArea" -> isPlayer1View ? "myBreedingArea" : "opponentBreedingArea";
-            case "player1Digi1" -> isPlayer1View ? "myDigi1" : "opponentDigi1";
-            case "player1Digi2" -> isPlayer1View ? "myDigi2" : "opponentDigi2";
-            case "player1Digi3" -> isPlayer1View ? "myDigi3" : "opponentDigi3";
-            case "player1Digi4" -> isPlayer1View ? "myDigi4" : "opponentDigi4";
-            case "player1Digi5" -> isPlayer1View ? "myDigi5" : "opponentDigi5";
-            case "player1Digi6" -> isPlayer1View ? "myDigi6" : "opponentDigi6";
-            case "player1Digi7" -> isPlayer1View ? "myDigi7" : "opponentDigi7";
-            case "player1Digi8" -> isPlayer1View ? "myDigi8" : "opponentDigi8";
-            case "player1Digi9" -> isPlayer1View ? "myDigi9" : "opponentDigi9";
-            case "player1Digi10" -> isPlayer1View ? "myDigi10" : "opponentDigi10";
-            case "player1Digi11" -> isPlayer1View ? "myDigi11" : "opponentDigi11";
-            case "player1Digi12" -> isPlayer1View ? "myDigi12" : "opponentDigi12";
-            case "player1Digi13" -> isPlayer1View ? "myDigi13" : "opponentDigi13";
-            case "player1Digi14" -> isPlayer1View ? "myDigi14" : "opponentDigi14";
-            case "player1Digi15" -> isPlayer1View ? "myDigi15" : "opponentDigi15";
-            case "player1Digi16" -> isPlayer1View ? "myDigi16" : "opponentDigi16";
-            case "player1Digi17" -> isPlayer1View ? "myDigi17" : "opponentDigi17";
-            case "player1Digi18" -> isPlayer1View ? "myDigi18" : "opponentDigi18";
-            case "player1Digi19" -> isPlayer1View ? "myDigi19" : "opponentDigi19";
-            case "player1Digi20" -> isPlayer1View ? "myDigi20" : "opponentDigi20";
-            case "player1Digi21" -> isPlayer1View ? "myDigi21" : "opponentDigi21";
-            case "player1Link1" -> isPlayer1View ? "myLink1" : "opponentLink1";
-            case "player1Link2" -> isPlayer1View ? "myLink2" : "opponentLink2";
-            case "player1Link3" -> isPlayer1View ? "myLink3" : "opponentLink3";
-            case "player1Link4" -> isPlayer1View ? "myLink4" : "opponentLink4";
-            case "player1Link5" -> isPlayer1View ? "myLink5" : "opponentLink5";
-            case "player1Link6" -> isPlayer1View ? "myLink6" : "opponentLink6";
-            case "player1Link7" -> isPlayer1View ? "myLink7" : "opponentLink7";
-            case "player1Link8" -> isPlayer1View ? "myLink8" : "opponentLink8";
-            case "player1Link9" -> isPlayer1View ? "myLink9" : "opponentLink9";
-            case "player1Link10" -> isPlayer1View ? "myLink10" : "opponentLink10";
-            case "player1Link11" -> isPlayer1View ? "myLink11" : "opponentLink11";
-            case "player1Link12" -> isPlayer1View ? "myLink12" : "opponentLink12";
-            case "player1Link13" -> isPlayer1View ? "myLink13" : "opponentLink13";
-            case "player1Link14" -> isPlayer1View ? "myLink14" : "opponentLink14";
-            case "player1Link15" -> isPlayer1View ? "myLink15" : "opponentLink15";
-            case "player1Link16" -> isPlayer1View ? "myLink16" : "opponentLink16";
-
-            case "player2Hand" -> isPlayer1View ? "opponentHand" : "myHand";
-            case "player2Deck" -> isPlayer1View ? "opponentDeckField" : "myDeckField";
-            case "player2EggDeck" -> isPlayer1View ? "opponentEggDeck" : "myEggDeck";
-            case "player2Trash" -> isPlayer1View ? "opponentTrash" : "myTrash";
-            case "player2Security" -> isPlayer1View ? "opponentSecurity" : "mySecurity";
-            case "player2Reveal" -> isPlayer1View ? "opponentReveal" : "myReveal";
-            case "player2BreedingArea" -> isPlayer1View ? "opponentBreedingArea" : "myBreedingArea";
-            case "player2Digi1" -> isPlayer1View ? "opponentDigi1" : "myDigi1";
-            case "player2Digi2" -> isPlayer1View ? "opponentDigi2" : "myDigi2";
-            case "player2Digi3" -> isPlayer1View ? "opponentDigi3" : "myDigi3";
-            case "player2Digi4" -> isPlayer1View ? "opponentDigi4" : "myDigi4";
-            case "player2Digi5" -> isPlayer1View ? "opponentDigi5" : "myDigi5";
-            case "player2Digi6" -> isPlayer1View ? "opponentDigi6" : "myDigi6";
-            case "player2Digi7" -> isPlayer1View ? "opponentDigi7" : "myDigi7";
-            case "player2Digi8" -> isPlayer1View ? "opponentDigi8" : "myDigi8";
-            case "player2Digi9" -> isPlayer1View ? "opponentDigi9" : "myDigi9";
-            case "player2Digi10" -> isPlayer1View ? "opponentDigi10" : "myDigi10";
-            case "player2Digi11" -> isPlayer1View ? "opponentDigi11" : "myDigi11";
-            case "player2Digi12" -> isPlayer1View ? "opponentDigi12" : "myDigi12";
-            case "player2Digi13" -> isPlayer1View ? "opponentDigi13" : "myDigi13";
-            case "player2Digi14" -> isPlayer1View ? "opponentDigi14" : "myDigi14";
-            case "player2Digi15" -> isPlayer1View ? "opponentDigi15" : "myDigi15";
-            case "player2Digi16" -> isPlayer1View ? "opponentDigi16" : "myDigi16";
-            case "player2Digi17" -> isPlayer1View ? "opponentDigi17" : "myDigi17";
-            case "player2Digi18" -> isPlayer1View ? "opponentDigi18" : "myDigi18";
-            case "player2Digi19" -> isPlayer1View ? "opponentDigi19" : "myDigi19";
-            case "player2Digi20" -> isPlayer1View ? "opponentDigi20" : "myDigi20";
-            case "player2Digi21" -> isPlayer1View ? "opponentDigi21" : "myDigi21";
-            case "player2Link1" -> isPlayer1View ? "opponentLink1" : "myLink1";
-            case "player2Link2" -> isPlayer1View ? "opponentLink2" : "myLink2";
-            case "player2Link3" -> isPlayer1View ? "opponentLink3" : "myLink3";
-            case "player2Link4" -> isPlayer1View ? "opponentLink4" : "myLink4";
-            case "player2Link5" -> isPlayer1View ? "opponentLink5" : "myLink5";
-            case "player2Link6" -> isPlayer1View ? "opponentLink6" : "myLink6";
-            case "player2Link7" -> isPlayer1View ? "opponentLink7" : "myLink7";
-            case "player2Link8" -> isPlayer1View ? "opponentLink8" : "myLink8";
-            case "player2Link9" -> isPlayer1View ? "opponentLink9" : "myLink9";
-            case "player2Link10" -> isPlayer1View ? "opponentLink10" : "myLink10";
-            case "player2Link11" -> isPlayer1View ? "opponentLink11" : "myLink11";
-            case "player2Link12" -> isPlayer1View ? "opponentLink12" : "myLink12";
-            case "player2Link13" -> isPlayer1View ? "opponentLink13" : "myLink13";
-            case "player2Link14" -> isPlayer1View ? "opponentLink14" : "myLink14";
-            case "player2Link15" -> isPlayer1View ? "opponentLink15" : "myLink15";
-            case "player2Link16" -> isPlayer1View ? "opponentLink16" : "myLink16";
-
-            default -> serverPosition;
         };
     }
 
@@ -507,32 +361,53 @@ public class GameWebSocket extends TextWebSocketHandler {
         boardState.setFieldByName(toServer, toList);
     }
 
-    private void broadcastGameAction(GameRoom gameRoom, WebSocketSession sender, String actionType, String cardId, String fromServer, String toServer, String... extra) {
+    private void broadcastGameAction(GameRoom gameRoom, WebSocketSession sender, String actionType, String cardId, String from, String to, String... extra) {
+        String username = sender.getPrincipal() != null ? sender.getPrincipal().getName() : "";
+        boolean isSenderPlayer1 = gameRoom.getPlayer1().username().equals(username);
+
         for (WebSocketSession s : gameRoom.getSessions()) {
             if (!s.isOpen()) continue;
             if (s.getId().equals(sender.getId())) continue;
 
             String destUsername = s.getPrincipal() != null ? s.getPrincipal().getName() : "";
-            String relativeFrom = mapServerToClient(fromServer, destUsername, gameRoom);
-            String relativeTo = mapServerToClient(toServer, destUsername, gameRoom);
+            boolean isDestPlayer = gameRoom.getPlayer1().username().equals(destUsername) || 
+                                   gameRoom.getPlayer2().username().equals(destUsername);
+
+            String finalFrom;
+            String finalTo;
+
+            if (isDestPlayer) {
+                // Players use original relative coordinate flips (100% stable)
+                finalFrom = getOppositePosition(from);
+                finalTo = getOppositePosition(to);
+            } else {
+                // Spectators view from Player 2's fallback perspective
+                if (isSenderPlayer1) {
+                    finalFrom = getOppositePosition(from);
+                    finalTo = getOppositePosition(to);
+                } else {
+                    finalFrom = from;
+                    finalTo = to;
+                }
+            }
 
             try {
                 if (actionType.equals("MOVE_CARD")) {
-                    s.sendMessage(new TextMessage("[MOVE_CARD]:" + cardId + ":" + relativeFrom + ":" + relativeTo));
+                    s.sendMessage(new TextMessage("[MOVE_CARD]:" + cardId + ":" + finalFrom + ":" + finalTo));
                 } else if (actionType.equals("MOVE_CARD_TO_STACK")) {
                     String topOrBottom = extra[0];
                     String facing = extra[1];
-                    s.sendMessage(new TextMessage("[MOVE_CARD_TO_STACK]:" + topOrBottom + ":" + cardId + ":" + relativeFrom + ":" + relativeTo + ":" + facing));
+                    s.sendMessage(new TextMessage("[MOVE_CARD_TO_STACK]:" + topOrBottom + ":" + cardId + ":" + finalFrom + ":" + finalTo + ":" + facing));
                 } else if (actionType.equals("TILT_CARD")) {
-                    s.sendMessage(new TextMessage("[TILT_CARD]:" + cardId + ":" + relativeTo));
+                    s.sendMessage(new TextMessage("[TILT_CARD]:" + cardId + ":" + finalTo));
                 } else if (actionType.equals("FLIP_CARD")) {
-                    s.sendMessage(new TextMessage("[FLIP_CARD]:" + cardId + ":" + relativeTo));
+                    s.sendMessage(new TextMessage("[FLIP_CARD]:" + cardId + ":" + finalTo));
                 } else if (actionType.equals("SET_MODIFIERS")) {
                     String modifiersJson = extra[0];
-                    s.sendMessage(new TextMessage("[SET_MODIFIERS]:" + cardId + ":" + relativeTo + ":" + modifiersJson));
+                    s.sendMessage(new TextMessage("[SET_MODIFIERS]:" + cardId + ":" + finalTo + ":" + modifiersJson));
                 } else if (actionType.equals("CREATE_TOKEN")) {
                     String cardName = extra[0];
-                    s.sendMessage(new TextMessage("[CREATE_TOKEN]:" + cardId + ":" + cardName + ":" + relativeTo));
+                    s.sendMessage(new TextMessage("[CREATE_TOKEN]:" + cardId + ":" + cardName + ":" + finalTo));
                 }
             } catch (IOException e) {
                 // ignore
@@ -686,19 +561,34 @@ public class GameWebSocket extends TextWebSocketHandler {
         String isEffect = parts[3];
 
         String username = Objects.requireNonNull(session.getPrincipal()).getName();
-        String fromServer = mapClientToServer(from, username, gameRoom);
-        String toServer = mapClientToServer(to, username, gameRoom);
+        boolean isSenderPlayer1 = gameRoom.getPlayer1().username().equals(username);
 
         for (WebSocketSession s : gameRoom.getSessions()) {
             if (!s.isOpen()) continue;
             if (s.getId().equals(session.getId())) continue;
 
             String destUsername = s.getPrincipal() != null ? s.getPrincipal().getName() : "";
-            String relativeFrom = mapServerToClient(fromServer, destUsername, gameRoom);
-            String relativeTo = mapServerToClient(toServer, destUsername, gameRoom);
+            boolean isDestPlayer = gameRoom.getPlayer1().username().equals(destUsername) || 
+                                   gameRoom.getPlayer2().username().equals(destUsername);
+
+            String finalFrom;
+            String finalTo;
+
+            if (isDestPlayer) {
+                finalFrom = getOppositePosition(from);
+                finalTo = getOppositePosition(to);
+            } else {
+                if (isSenderPlayer1) {
+                    finalFrom = getOppositePosition(from);
+                    finalTo = getOppositePosition(to);
+                } else {
+                    finalFrom = from;
+                    finalTo = to;
+                }
+            }
 
             try {
-                s.sendMessage(new TextMessage("[ATTACK]:" + relativeFrom + ":" + relativeTo + ":" + isEffect));
+                s.sendMessage(new TextMessage("[ATTACK]:" + finalFrom + ":" + finalTo + ":" + isEffect));
             } catch (IOException e) {
                 // ignore
             }
@@ -714,9 +604,7 @@ public class GameWebSocket extends TextWebSocketHandler {
         String currentPlayer = session.getPrincipal() != null ? session.getPrincipal().getName() : null;
         if (currentPlayer != null) {
             updateBoardStateForCardMove(gameRoom, cardId, from, to, currentPlayer);
-            String fromServer = mapClientToServer(from, currentPlayer, gameRoom);
-            String toServer = mapClientToServer(to, currentPlayer, gameRoom);
-            broadcastGameAction(gameRoom, session, "MOVE_CARD", cardId, fromServer, toServer);
+            broadcastGameAction(gameRoom, session, "MOVE_CARD", cardId, from, to);
         }
     }
 
@@ -730,8 +618,7 @@ public class GameWebSocket extends TextWebSocketHandler {
         String currentPlayer = session.getPrincipal() != null ? session.getPrincipal().getName() : null;
         if (currentPlayer != null) {
             updateCardModifiers(session, gameRoom, cardId, location, modifiersJson);
-            String locationServer = mapClientToServer(location, currentPlayer, gameRoom);
-            broadcastGameAction(gameRoom, session, "SET_MODIFIERS", cardId, null, locationServer, modifiersJson);
+            broadcastGameAction(gameRoom, session, "SET_MODIFIERS", cardId, null, location, modifiersJson);
         }
     }
 
@@ -746,9 +633,7 @@ public class GameWebSocket extends TextWebSocketHandler {
         String currentPlayer = session.getPrincipal() != null ? session.getPrincipal().getName() : null;
         if (currentPlayer != null) {
             updateBoardStateForStackMove(gameRoom, cardId, from, to, topOrBottom, facing, currentPlayer);
-            String fromServer = mapClientToServer(from, currentPlayer, gameRoom);
-            String toServer = mapClientToServer(to, currentPlayer, gameRoom);
-            broadcastGameAction(gameRoom, session, "MOVE_CARD_TO_STACK", cardId, fromServer, toServer, topOrBottom, facing);
+            broadcastGameAction(gameRoom, session, "MOVE_CARD_TO_STACK", cardId, from, to, topOrBottom, facing);
         }
     }
 
@@ -761,8 +646,7 @@ public class GameWebSocket extends TextWebSocketHandler {
         String currentPlayer = session.getPrincipal() != null ? session.getPrincipal().getName() : null;
         if (currentPlayer != null) {
             updateCardTiltStatus(session, gameRoom, cardId, location);
-            String locationServer = mapClientToServer(location, currentPlayer, gameRoom);
-            broadcastGameAction(gameRoom, session, "TILT_CARD", cardId, null, locationServer);
+            broadcastGameAction(gameRoom, session, "TILT_CARD", cardId, null, location);
         }
     }
 
@@ -775,8 +659,7 @@ public class GameWebSocket extends TextWebSocketHandler {
         String currentPlayer = session.getPrincipal() != null ? session.getPrincipal().getName() : null;
         if (currentPlayer != null) {
             updateCardFaceStatus(session, gameRoom, cardId, location);
-            String locationServer = mapClientToServer(location, currentPlayer, gameRoom);
-            broadcastGameAction(gameRoom, session, "FLIP_CARD", cardId, null, locationServer);
+            broadcastGameAction(gameRoom, session, "FLIP_CARD", cardId, null, location);
         }
     }
 
@@ -858,7 +741,7 @@ public class GameWebSocket extends TextWebSocketHandler {
                     currentList.add(card);
                     boardState.setFieldByName(serverPosition, currentList);
                     
-                    broadcastGameAction(gameRoom, session, "CREATE_TOKEN", card.getId().toString(), null, serverPosition, card.getName());
+                    broadcastGameAction(gameRoom, session, "CREATE_TOKEN", card.getId().toString(), targetPosition, null, card.getName());
                 }
             } catch (Exception e) {
                 System.err.println("ERROR in handleCreateToken: " + e.getMessage());
