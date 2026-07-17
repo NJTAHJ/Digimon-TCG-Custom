@@ -49,7 +49,8 @@ public class LobbyWebSocket extends TextWebSocketHandler {
 
     private final String warning = "[CHAT_MESSAGE]:【SERVER】: ⚠ The server detected multiple connections for the same user. Make sure to only use one tab per account. ⚠";
 
-    public final LinkedList<ChatMessage> globalChatMessages = new LinkedList<>(List.of(new ChatMessage("Join our Discord!", "【SERVER】")));
+    // ✅ WE CHANGED THE WELCOME MESSAGE SO YOU KNOW WHEN RENDER IS DONE UPDATING!
+    public final LinkedList<ChatMessage> globalChatMessages = new LinkedList<>(List.of(new ChatMessage("Spectator Mode is Live! (Up to 5 players)", "【SERVER】")));
 
     @Autowired
     private GameWebSocket gameWebSocket;
@@ -86,7 +87,7 @@ public class LobbyWebSocket extends TextWebSocketHandler {
         List<String> userBlockedAccounts = mongoUserDetailsService.getBlockedAccounts(username);
 
         List<Room> openRooms = rooms.stream()
-                .filter(r -> r.getPlayers().size() == 1)
+                .filter(r -> r.getPlayers().size() < 5)
                 .filter(r -> !userBlockedAccounts.contains(r.getHostName()))
                 .toList();
         List<RoomDTO> openRoomsDTO = openRooms.stream().map(this::getRoomDTO).toList();
@@ -321,15 +322,15 @@ public class LobbyWebSocket extends TextWebSocketHandler {
     }
 
     private void broadcastRooms() throws IOException {
-        List<Room> roomsWithOnlyHosts = rooms.stream()
-                .filter(r -> r.getPlayers().size() == 1)
+        List<Room> joinableRooms = rooms.stream()
+                .filter(r -> r.getPlayers().size() < 5)
                 .toList();
 
         for (WebSocketSession session : globalActiveSessions) {
             String sessionUsername = Objects.requireNonNull(session.getPrincipal()).getName();
             List<String> sessionUserBlockedAccounts = mongoUserDetailsService.getBlockedAccounts(sessionUsername);
             
-            List<RoomDTO> filteredRoomDTOs = roomsWithOnlyHosts.stream()
+            List<RoomDTO> filteredRoomDTOs = joinableRooms.stream()
                     .filter(r -> !sessionUserBlockedAccounts.contains(r.getHostName()))
                     .map(this::getRoomDTO)
                     .toList();
