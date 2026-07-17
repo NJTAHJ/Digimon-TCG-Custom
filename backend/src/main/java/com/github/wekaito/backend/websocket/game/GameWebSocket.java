@@ -499,6 +499,189 @@ public class GameWebSocket extends TextWebSocketHandler {
 
         return objectMapper.writeValueAsString(completeBoardState);
     }
+
+    private void handleAttack(GameRoom gameRoom, WebSocketSession session, String message) {
+        if (!gameRoom.hasFullConnection() || message.split(":").length < 4) return;
+        String[] parts = message.split(":", 4);
+        String from = parts[1];
+        String to = parts[2];
+        String isEffect = parts[3];
+        gameRoom.sendMessageToOtherSessions(session,"[ATTACK]:" + getOppositePosition(from) + ":" + getOppositePosition(to) + ":" + isEffect);
+    }
+
+    private void handleSendMoveCard(GameRoom gameRoom, WebSocketSession session, String roomMessage) {
+        if (!gameRoom.hasFullConnection() || roomMessage.split(":").length < 4) return;
+        String[] parts = roomMessage.split(":", 4);
+        String cardId = parts[1];
+        String from = parts[2];
+        String to = parts[3];
+        String currentPlayer = session.getPrincipal() != null ? session.getPrincipal().getName() : null;
+        if (currentPlayer != null) {
+            updateBoardStateForCardMove(gameRoom, cardId, from, to, currentPlayer);
+        }
+        gameRoom.sendMessageToOtherSessions(session, "[MOVE_CARD]:" + cardId + ":" + getOppositePosition(from) + ":" + getOppositePosition(to));
+    }
+
+    private void handleSendSetModifiers(GameRoom gameRoom, WebSocketSession session, String roomMessage) {
+        if (!gameRoom.hasFullConnection() || roomMessage.split(":").length < 5) return;
+        String[] parts = roomMessage.split(":");
+        String cardId = parts[2];
+        String location = parts[3];
+        String modifiersJson = String.join(":", Arrays.copyOfRange(parts, 4, parts.length));
+
+        updateCardModifiers(session, gameRoom, cardId, location, modifiersJson);
+        gameRoom.sendMessageToOtherSessions(session, "[SET_MODIFIERS]:" + cardId + ":" + getOppositePosition(location) + ":" + modifiersJson);
+    }
+
+    private void handleSendMoveToStack(GameRoom gameRoom, WebSocketSession session, String roomMessage) {
+        if (!gameRoom.hasFullConnection() || roomMessage.split(":").length < 6) return;
+        String[] parts = roomMessage.split(":", 6);
+        String topOrBottom = parts[1];
+        String cardId = parts[2];
+        String from = parts[3];
+        String to = parts[4];
+        String facing = parts[5];
+        String currentPlayer = session.getPrincipal() != null ? session.getPrincipal().getName() : null;
+        if (currentPlayer != null) {
+            updateBoardStateForStackMove(gameRoom, cardId, from, to, topOrBottom, facing, currentPlayer);
+        }
+        gameRoom.sendMessageToOtherSessions(session, "[MOVE_CARD_TO_STACK]:" + topOrBottom + ":" + cardId + ":" + getOppositePosition(from) + ":" + getOppositePosition(to) + ":" + facing);
+    }
+
+    private void handleTiltCard(GameRoom gameRoom, WebSocketSession session, String roomMessage) {
+        if (!gameRoom.hasFullConnection() || roomMessage.split(":").length < 4) return;
+        String[] parts = roomMessage.split(":", 4);
+        String cardId = parts[2];
+        String location = parts[3];
+
+        updateCardTiltStatus(session, gameRoom, cardId, location);
+        gameRoom.sendMessageToOtherSessions(session, "[TILT_CARD]:" + cardId + ":" + getOppositePosition(location));
+    }
+
+    private void handleFlipCard(GameRoom gameRoom, WebSocketSession session, String roomMessage) {
+        if (!gameRoom.hasFullConnection() || roomMessage.split(":").length < 3) return;
+        String[] parts = roomMessage.split(":", 3);
+        String cardId = parts[1];
+        String location = parts[2];
+
+        updateCardFaceStatus(session, gameRoom, cardId, location);
+        gameRoom.sendMessageToOtherSessions(session, "[FLIP_CARD]:" + cardId + ":" + getOppositePosition(location));
+    }
+
+    private void updateCardTiltStatus(WebSocketSession session, GameRoom gameRoom, String cardId, String location) {
+        BoardState boardState = gameRoom.getBoardState();
+        if (boardState == null) return;
+        String username = session.getPrincipal() != null ? session.getPrincipal().getName() : null;
+        if (username == null) return;
+
+        String serverLocation = mapClientToServer(location, username, gameRoom);
+        List<GameCard> cards = boardState.getFieldByName(serverLocation);
+        cards.stream().filter(c -> c.getId().toString().equals(cardId)).findFirst().ifPresent(GameCard::tilt);
+        boardState.setFieldByName(serverLocation, cards);
+    }
+
+    private void updateCardFaceStatus(WebSocketSession session, GameRoom gameRoom, String cardId, String location) {
+        BoardState boardState = gameRoom.getBoardState();
+        if (boardState == null) return;
+        String username = session.getPrincipal() != null ? session.getPrincipal().getName() : null;
+        if (username == null) return;
+
+        String serverLocation = mapClientToServer(location, username, gameRoom);
+        List<GameCard> cards = boardState.getFieldByName(serverLocation);
+        cards.stream().filter(c -> c.getId().toString().equals(cardId)).findFirst().ifPresent(GameCard::flip);
+        boardState.setFieldByName(serverLocation, cards);
+    }
+
+    private void updateCardModifiers(WebSocketSession session, GameRoom gameRoom, String cardId, String location, String modifiersJson) {
+        BoardState boardState = gameRoom.getBoardState();
+        if (boardState == null) return;
+        String username = session.getPrincipal() != null ? session.getPrincipal().getName() : null;
+        if (username == null) return;
+
+        String serverLocation = mapClientToServer(location, username, gameRoom);
+        try {
+            Modifiers newModifiers = objectMapper.readValue(modifiersJson, Modifiers.class);
+            List<GameCard> cards = boardState.getFieldByName(serverLocation);
+            cards.stream().filter(c -> c.getId().toString().equals(cardId)).findFirst().ifPresent(c -> c.setModifiers(newModifiers));
+            boardState.setFieldByName(serverLocation, cards);
+        } catch (Exception e) {
+            // ignore
+        }
+    }
+
+    private void handleUnsuspendAll(GameRoom gameRoom, WebSocketSession session) {
+        if (!gameRoom.hasFullConnection()) return;
+        unsuspendAllCardsInBoardState(gameRoom, session);
+        gameRoom.sendMessageToOtherSessions(session, "[UNSUSPEND_ALL]");
+    }
+    
+    private void unsuspendAllCardsInBoardState(GameRoom gameRoom, WebSocketSession session) {
+        BoardState boardState = gameRoom.getBoardState();
+        if (boardState == null) return;
+        String username = session.getPrincipal() != null ? session.getPrincipal().getName() : null;
+        if (username == null) return;
+
+        boolean isPlayer1 = gameRoom.getPlayer1().username().equals(username);
+        for (int i = 1; i <= 21; i++) {
+            String digiPosition = isPlayer1 ? "player1Digi" + i : "player2Digi" + i;
+            List<GameCard> cards = boardState.getFieldByName(digiPosition);
+            cards.stream().filter(c -> c.isTilted).forEach(GameCard::tilt);
+            boardState.setFieldByName(digiPosition, cards);
+        }
+    }
+
+    private void handleCreateToken(GameRoom gameRoom, WebSocketSession session, String roomMessage) {
+        if (!gameRoom.hasFullConnection()) return;
+        String[] parts = roomMessage.split(":", 3);
+        String targetPosition = parts[1];
+        String cardJson = parts[2];
+        String currentPlayer = session.getPrincipal() != null ? session.getPrincipal().getName() : null;
+        if (currentPlayer != null) {
+            try {
+                GameCard card = cardJsonConverter.convertToGameCard(cardJson);
+                BoardState boardState = gameRoom.getBoardState();
+                if (boardState != null) {
+                    String serverPosition = mapClientToServer(targetPosition, currentPlayer, gameRoom);
+                    List<GameCard> currentList = boardState.getFieldByName(serverPosition);
+                    currentList.add(card);
+                    boardState.setFieldByName(serverPosition, currentList);
+                }
+                gameRoom.sendMessageToOtherSessions(session, "[CREATE_TOKEN]:" + card.getId() + ":" + card.getName() + ":" + getOppositePosition(targetPosition));
+            } catch (Exception e) {
+                System.err.println("ERROR in handleCreateToken: " + e.getMessage());
+            }
+        }
+    }
+
+    private void handleMemoryUpdate(GameRoom gameRoom, WebSocketSession session, String roomMessage) {
+        if (!gameRoom.hasFullConnection() || roomMessage.split(":").length < 2) return;
+        String[] parts = roomMessage.split(":", 2);
+        int memory = Integer.parseInt(parts[1]) * -1;
+        BoardState boardState = gameRoom.getBoardState();
+        if (boardState != null) {
+            String currentPlayer = session.getPrincipal() != null ? session.getPrincipal().getName() : null;
+            if (currentPlayer != null) {
+                boolean isPlayer1 = gameRoom.getPlayer1().username().equals(currentPlayer);
+                int newMemory = Integer.parseInt(parts[1]);
+                if (isPlayer1) {
+                    boardState.setPlayer1Memory(newMemory);
+                    boardState.setPlayer2Memory(-1 * newMemory);
+                } else {
+                    boardState.setPlayer1Memory(-1 * newMemory);
+                    boardState.setPlayer2Memory(newMemory);
+                }
+            }
+        }
+        gameRoom.sendMessageToOtherSessions(session, "[UPDATE_MEMORY]:" + memory);
+    }
+
+    private void handleCommandWithId(GameRoom gameRoom, WebSocketSession session, String roomMessage) {
+        if (!gameRoom.hasFullConnection() || roomMessage.split(":").length < 2) return;
+        String[] parts = roomMessage.split(":", 2);
+        String command = parts[0];
+        String id = parts.length > 1 ? parts[1] : "";
+        gameRoom.sendMessageToOtherSessions(session, convertCommand(command) + ":" + id);
+    }
     
     public void broadcastServerMessageToAllGameRooms(String message) {
         String formattedMessage = "[CHAT_MESSAGE]:【SERVER】﹕" + message;
