@@ -60,7 +60,7 @@ export default function Chat({ sendMessage, messages, roomId }: Props) {
                                     {message.message === "Join our Discord!" ? (
                                         <>
                                             <a
-                                                href="https://discord.gg/sBdByGAh2y"
+                                                href="https://discord.gg/6cUETvkeAw"
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                             >
