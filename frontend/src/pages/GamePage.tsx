@@ -2,7 +2,7 @@ import GameBackground from "../components/game/GameBackground.tsx";
 import styled from "@emotion/styled";
 import { IconButton } from "@mui/material";
 import carbackSrc from "../assets/cardBack.jpg";
-import { useCallback, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useLayoutEffect, useRef, useState, useEffect } from "react";
 import PlayerBoardSide from "../components/game/PlayerBoardSide/PlayerBoardSide.tsx";
 import { useGeneralStates } from "../hooks/useGeneralStates.ts";
 import { useContextMenu } from "react-contexify";
@@ -52,9 +52,9 @@ export default function GamePage() {
 
     const gameId = useGameBoardStates((state) => state.gameId);
     
-    // Spectator logic calculations
-    const p1 = gameId.split("‗")[0];
-    const p2 = gameId.split("‗")[1];
+    // Spectator logic calculations safely guarded against empty gameIds
+    const p1 = gameId ? gameId.split("‗")[0] : "";
+    const p2 = gameId ? gameId.split("‗")[1] : "";
     const isSpectator = user !== p1 && user !== p2;
     const opponentName = isSpectator ? p2 : (p1 === user ? p2 : p1);
 
@@ -112,6 +112,19 @@ export default function GamePage() {
         clearAttackAnimation,
         restartAttackAnimation,
     });
+
+    // ✅ LIVE ON-SCREEN ERROR BOUNDARY LOGGER FOR MOBILE/TABLET SPECATOR TESTING
+    useEffect(() => {
+        const handleError = (errorEvent: ErrorEvent) => {
+            const shortMessage = errorEvent.message || "Unknown error";
+            const file = errorEvent.filename ? errorEvent.filename.split("/").pop() : "unknown_file";
+            const line = errorEvent.lineno || "0";
+            setMessages(`【CLIENT ERROR】﹕${shortMessage} (at ${file}:${line})`);
+        };
+
+        window.addEventListener("error", handleError);
+        return () => window.removeEventListener("error", handleError);
+    }, [setMessages]);
 
     const createDropHandler = useDropZoneReactDnd({
         sendMessage,
