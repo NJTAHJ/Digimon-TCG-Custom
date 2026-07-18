@@ -1,152 +1,255 @@
-import styled from "@emotion/styled";
-import { WSUtils } from "../../pages/GamePage.tsx";
 import { useGameBoardStates } from "../../hooks/useGameBoardStates.ts";
-import AddIcon from "@mui/icons-material/AddCircleTwoTone";
-import RemoveIcon from "@mui/icons-material/RemoveCircleTwoTone";
-import { notifyInfo } from "../../utils/toasts.ts";
+import styled from "@emotion/styled";
+import { useSound } from "../../hooks/useSound.ts";
+import { WSUtils } from "../../pages/GamePage.tsx";
 import { useGeneralStates } from "../../hooks/useGeneralStates.ts";
 
-export default function MemoryBar({ wsUtils }: { wsUtils: WSUtils }) {
-    // ✅ FIXED: Using 'myMemory' to match your store definition
+export default function MemoryBar({ wsUtils }: { wsUtils?: WSUtils }) {
     const myMemory = useGameBoardStates((state) => state.myMemory);
     const setMemory = useGameBoardStates((state) => state.setMemory);
-    const usernameTurn = useGameBoardStates((state) => state.usernameTurn);
-    const setUsernameTurn = useGameBoardStates((state) => state.setUsernameTurn);
 
-    const playSuspendSfx = useGeneralStates((state) => state.cardWidth * 0.45); // safely get scale sizes
+    const playButtonClickSfx = useSound((state) => state.playButtonClickSfx);
 
-    const isMyTurn = usernameTurn === wsUtils.matchInfo.user;
+    function handleClick(memory: number) {
+        setMemory(memory);
+        playButtonClickSfx();
+        wsUtils?.sendChatMessage(`[FIELD_UPDATE]≔【MEMORY】﹕${myMemory}±${memory}`);
+        wsUtils?.sendMessage(`${wsUtils.matchInfo.gameId}:/updateMemory:${memory}`);
+        wsUtils?.sendSfx("playButtonClickSfx");
+    }
 
-    const handleMemoryChange = (value: number) => {
-        // ✅ FIXED: Using 'myMemory'
-        const newMemory = myMemory + value;
-        if (newMemory < -10 || newMemory > 10) return;
-        setMemory(newMemory);
-        wsUtils.sendMessage(`${wsUtils.matchInfo.gameId}:/updateMemory:${newMemory}`);
-        
-        if (newMemory > 0 && isMyTurn) {
-            setUsernameTurn(wsUtils.matchInfo.opponentName);
-            wsUtils.sendMessage(`${wsUtils.matchInfo.gameId}:/updatePhase`);
-        }
-    };
-
-    const handlePassTurn = () => {
-        if (!isMyTurn) {
-            notifyInfo("It's not your turn!");
-            return;
-        }
-        setMemory(3);
-        setUsernameTurn(wsUtils.matchInfo.opponentName);
-        wsUtils.sendMessage(`${wsUtils.matchInfo.gameId}:/updateMemory:3`);
-        wsUtils.sendMessage(`${wsUtils.matchInfo.gameId}:/updatePhase`);
-        wsUtils.sendSfx("playPassTurnSfx");
-    };
+    const fontSize = useGeneralStates((state) => state.cardWidth / 2.675);
+    const bigFontSize = fontSize * 1.3;
 
     return (
-        <Container>
-            <MemoryTrack>
-                {Array.from({ length: 21 }, (_, i) => {
-                    const value = i - 10;
-                    // ✅ FIXED: Using 'myMemory'
-                    const isActive = myMemory === value;
-                    return (
-                        <MemorySlot key={value} active={isActive} value={value}>
-                            {value === 0 ? "0" : Math.abs(value)}
-                        </MemorySlot>
-                    );
-                })}
-            </MemoryTrack>
-            <ControlContainer>
-                <MemoryButton onClick={() => handleMemoryChange(-1)}>
-                    <RemoveIcon style={{ fontSize: playSuspendSfx }} />
-                </MemoryButton>
-                <MemoryButton onClick={() => handleMemoryChange(1)}>
-                    <AddIcon style={{ fontSize: playSuspendSfx }} />
-                </MemoryButton>
-                <PassButton onClick={handlePassTurn}>
-                    PASS TURN
-                </PassButton>
-            </ControlContainer>
-        </Container>
+        <MemoryBarContainer>
+            <BigMemoryButton onClick={() => handleClick(10)} value={10} myMemory={myMemory} fontSize={bigFontSize}>
+                <StyledSpanOneBig>10</StyledSpanOneBig>
+            </BigMemoryButton>
+
+            <MemoryButton onClick={() => handleClick(9)} value={9} myMemory={myMemory} fontSize={fontSize}>
+                <StyledSpan>9</StyledSpan>
+            </MemoryButton>
+            <MemoryButton onClick={() => handleClick(8)} value={8} myMemory={myMemory} fontSize={fontSize}>
+                <StyledSpan>8</StyledSpan>
+            </MemoryButton>
+            <MemoryButton onClick={() => handleClick(7)} value={7} myMemory={myMemory} fontSize={fontSize}>
+                <StyledSpan>7</StyledSpan>
+            </MemoryButton>
+            <MemoryButton onClick={() => handleClick(6)} value={6} myMemory={myMemory} fontSize={fontSize}>
+                <StyledSpan>6</StyledSpan>
+            </MemoryButton>
+            <MemoryButton onClick={() => handleClick(5)} value={5} myMemory={myMemory} fontSize={fontSize}>
+                <StyledSpan>5</StyledSpan>
+            </MemoryButton>
+            <MemoryButton onClick={() => handleClick(4)} value={4} myMemory={myMemory} fontSize={fontSize}>
+                <StyledSpan>4</StyledSpan>
+            </MemoryButton>
+            <MemoryButton onClick={() => handleClick(3)} value={3} myMemory={myMemory} fontSize={fontSize}>
+                <StyledSpan>3</StyledSpan>
+            </MemoryButton>
+            <MemoryButton onClick={() => handleClick(2)} value={2} myMemory={myMemory} fontSize={fontSize}>
+                <StyledSpan>2</StyledSpan>
+            </MemoryButton>
+            <MemoryButton onClick={() => handleClick(1)} value={1} myMemory={myMemory} fontSize={fontSize}>
+                <StyledSpanOne>1</StyledSpanOne>
+            </MemoryButton>
+
+            <BigMemoryButton onClick={() => handleClick(0)} value={0} myMemory={myMemory} fontSize={bigFontSize}>
+                <ZeroSpan>0</ZeroSpan>
+            </BigMemoryButton>
+
+            <MemoryButton onClick={() => handleClick(-1)} value={-1} myMemory={myMemory} fontSize={fontSize}>
+                <StyledSpanOne>1</StyledSpanOne>
+            </MemoryButton>
+            <MemoryButton onClick={() => handleClick(-2)} value={-2} myMemory={myMemory} fontSize={fontSize}>
+                <StyledSpan>2</StyledSpan>
+            </MemoryButton>
+            <MemoryButton onClick={() => handleClick(-3)} value={-3} myMemory={myMemory} fontSize={fontSize}>
+                <StyledSpan>3</StyledSpan>
+            </MemoryButton>
+            <MemoryButton onClick={() => handleClick(-4)} value={-4} myMemory={myMemory} fontSize={fontSize}>
+                <StyledSpan>4</StyledSpan>
+            </MemoryButton>
+            <MemoryButton onClick={() => handleClick(-5)} value={-5} myMemory={myMemory} fontSize={fontSize}>
+                <StyledSpan>5</StyledSpan>
+            </MemoryButton>
+            <MemoryButton onClick={() => handleClick(-6)} value={-6} myMemory={myMemory} fontSize={fontSize}>
+                <StyledSpan>6</StyledSpan>
+            </MemoryButton>
+            <MemoryButton onClick={() => handleClick(-7)} value={-7} myMemory={myMemory} fontSize={fontSize}>
+                <StyledSpan>7</StyledSpan>
+            </MemoryButton>
+            <MemoryButton onClick={() => handleClick(-8)} value={-8} myMemory={myMemory} fontSize={fontSize}>
+                <StyledSpan>8</StyledSpan>
+            </MemoryButton>
+            <MemoryButton onClick={() => handleClick(-9)} value={-9} myMemory={myMemory} fontSize={fontSize}>
+                <StyledSpan>9</StyledSpan>
+            </MemoryButton>
+
+            <BigMemoryButton onClick={() => handleClick(-10)} value={-10} myMemory={myMemory} fontSize={bigFontSize}>
+                <StyledSpanOneBig>10</StyledSpanOneBig>
+            </BigMemoryButton>
+        </MemoryBarContainer>
     );
 }
 
-const Container = styled.div`
-    grid-column: 10 / 29;
-    grid-row: 10 / 12;
+const MemoryBarContainer = styled.div`
+    height: 100%;
+    width: 95.75%;
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
-    gap: 4px;
-    z-index: 10;
+    // match BoardLayout Element of GamePage.tsx:
+    grid-column: 5 / 29; // of 35
+    grid-row: 10 / 12; // of 14
+    margin-left: 2.25%;
 `;
 
-const MemoryTrack = styled.div`
-    display: flex;
-    width: 100%;
-    height: 40px;
-    background: #111;
-    border: 2px solid #333;
-    border-radius: 5px;
-    overflow: hidden;
-`;
-
-const MemorySlot = styled.div<{ active: boolean; value: number }>`
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: "League Spartan", sans-serif;
-    font-size: 16px;
-    font-weight: bold;
-    color: ${({ active }) => (active ? "#fff" : "#666")};
-    background: ${({ active, value }) =>
-        active
-            ? value === 0
-                ? "purple"
-                : value < 0
-                  ? "crimson"
-                  : "royalblue"
-            : "transparent"};
+const MemoryButton = styled.button<{ myMemory: number; value: number; fontSize: number }>`
+    width: 3.75%;
+    height: 43%;
+    padding: 0;
     transition: all 0.2s ease;
-`;
+    z-index: 200;
 
-const ControlContainer = styled.div`
     display: flex;
-    gap: 8px;
+    justify-content: center;
     align-items: center;
-`;
 
-const MemoryButton = styled.button`
-    cursor: pointer;
-    background: none;
-    border: none;
-    color: ghostwhite;
-    opacity: 0.8;
-    &:hover {
-        opacity: 1;
-        color: royalblue;
-    }
-    &:active {
-        transform: scale(0.95);
-    }
-`;
-
-const PassButton = styled.button`
-    cursor: pointer;
-    background: royalblue;
-    border: 1px solid dodgerblue;
-    border-radius: 4px;
-    color: white;
-    font-family: "League Spartan", sans-serif;
-    font-size: 14px;
+    font-family:
+        alarm clock,
+        sans-serif;
+    font-size: ${({ fontSize }) => fontSize}px;
+    text-shadow: ${({ value }) => (value > 0 ? "0 0 1px #0c0c0c" : "none")};
     font-weight: bold;
-    padding: 4px 12px;
+
+    border: ${({ myMemory, value }) => getBorder(value, myMemory)};
+    color: ${({ myMemory, value }) => getColor(value, myMemory)};
+
+    background: rgba(0, 0, 0, ${({ myMemory, value }) => (value === myMemory ? 0.75 : 0.65)});
+    border-radius: 50%;
+
+    filter: drop-shadow(${({ myMemory, value }) => getDropShadow(value, myMemory)});
+    box-shadow: inset ${({ myMemory, value }) => getBoxShadow(value, myMemory)};
+
     &:hover {
-        background: dodgerblue;
-    }
-    &:active {
-        transform: scale(0.95);
+        filter: brightness(1.2) contrast(1.2) drop-shadow(${({ myMemory, value }) => getDropShadow(value, myMemory)});
+        opacity: 1;
+        border: ${({ myMemory, value }) => getBorder(value, myMemory, true)};
+        box-shadow: inset ${({ myMemory, value }) => getBoxShadow(value, myMemory, true)};
     }
 `;
+
+const BigMemoryButton = styled(MemoryButton)`
+    width: 5.25%;
+    height: 60%;
+`;
+
+const ZeroSpan = styled.span`
+    font-weight: bold;
+    transform: translate(8%, 3%) skewX(8.5deg);
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+`;
+
+const StyledSpanOne = styled.span`
+    transform: translate(-23%, 3.75%) skewX(8.5deg);
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+`;
+
+const StyledSpanOneBig = styled.span`
+    transform: translate(-12%, 3.25%) skewX(8.5deg);
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+`;
+
+const StyledSpan = styled.span`
+    transform: translate(5%, 5%) skewX(7.8deg);
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+`;
+
+function getColor(value: number, myMemory: number) {
+    if (value > 0) {
+        if (value <= myMemory) return "rgb(0,160,255)";
+        else return "rgb(189,189,189)";
+    }
+
+    if (value === 0) {
+        if (value === myMemory) return "rgb(161,74,255)";
+        else return "rgb(189,189,189)";
+    }
+
+    if (value < 0) {
+        if (value >= myMemory) return "rgb(255,94,112)";
+        else return "rgb(189,189,189)";
+    }
+}
+
+function getBorder(value: number, myMemory: number, hover?: boolean) {
+    const borderConfig = "1px solid ";
+    const borderConfigSelected = hover ? borderConfig : "2px solid ";
+
+    if (value > 0) {
+        if (value <= myMemory) return borderConfigSelected + "rgba(29,159,221,0.9)";
+        else return borderConfig + "rgba(29,159,221,0.4)";
+    }
+
+    if (value === 0) {
+        if (value === myMemory) return borderConfigSelected + "rgba(191,159,255,0.8)";
+        else return borderConfig + "rgba(191,159,255,0.3)";
+    }
+
+    if (value < 0) {
+        if (value >= myMemory) return borderConfigSelected + "rgba(255,81,118,0.8)";
+        else return borderConfig + "rgba(255,81,118,0.3)";
+    }
+}
+
+function getDropShadow(value: number, myMemory: number) {
+    const shadowConfig = "0 0 2px ";
+
+    if (value > 0) {
+        if (value <= myMemory) return shadowConfig + "rgba(29,159,221,0.6)";
+        else return shadowConfig + "rgba(29,159,221,0.15)";
+    }
+
+    if (value === 0) {
+        if (value === myMemory) return shadowConfig + "rgba(95,54,138,0.6)";
+        else return shadowConfig + "rgba(95,54,138,0.6)";
+    }
+
+    if (value < 0) {
+        if (value >= myMemory) return shadowConfig + "rgba(255,81,118,0.6)";
+        else return shadowConfig + "rgba(255,81,118,0.15)";
+    }
+}
+
+function getBoxShadow(value: number, myMemory: number, hover?: boolean) {
+    const shadowConfig = hover ? "0 0 7px 3px " : "1px 2px 5px 1px ";
+
+    if (value > 0) {
+        if (value <= myMemory) return shadowConfig + "rgba(29,159,221,1)";
+        else return shadowConfig + "rgba(29,159,221,0.5)";
+    }
+
+    if (value === 0) {
+        if (value === myMemory) return shadowConfig + "rgba(255,255,255,0.6)";
+        else return shadowConfig + "rgba(255,255,255,0.25)";
+    }
+
+    if (value < 0) {
+        if (value >= myMemory) return shadowConfig + "rgba(255,81,118,0.8)";
+        else return shadowConfig + "rgba(255,81,118,0.4)";
+    }
+}
