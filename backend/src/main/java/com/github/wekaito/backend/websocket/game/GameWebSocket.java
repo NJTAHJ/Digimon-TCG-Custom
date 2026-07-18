@@ -340,6 +340,137 @@ public class GameWebSocket extends TextWebSocketHandler {
         boardState.setFieldByName(toServer, toList);
     }
 
+    private void computeGameRoom(WebSocketSession session, String gameId) throws IOException {
+        GameRoom gameRoom = gameRooms.get(gameId);
+        boolean shouldStartScheduledTasks = false;
+
+        if (gameRoom == null) {
+            String[] usernames = gameId.split("‗");
+            try {
+                String avatar1 = mongoUserDetailsService.getAvatar(usernames[0]);
+                String avatar2 = mongoUserDetailsService.getAvatar(usernames[1]);
+                String deckId1 = mongoUserDetailsService.getActiveDeck(usernames[0]);
+                String deckId2 = mongoUserDetailsService.getActiveDeck(usernames[1]);
+                String mainSleeve1 = deckService.getDeckSleeveById(deckId1);
+                String mainSleeve2 = deckService.getDeckSleeveById(deckId2);
+                String eggSleeve1 = deckService.getEggDeckSleeveById(deckId1);
+                String eggSleeve2 = deckService.getEggDeckSleeveById(deckId2);
+
+                Player player1 = new Player(usernames[0], avatar1, mainSleeve1, eggSleeve1);
+                Player player2 = new Player(usernames[1], avatar2, mainSleeve2, eggSleeve2);
+
+                List<Card> player1MainDeck = deckService.getMainDeckCardsById(deckId1);
+                List<Card> player1EggDeck = deckService.getEggDeckCardsById(deckId1);
+                List<Card> player2MainDeck = deckService.getMainDeckCardsById(deckId2);
+                List<Card> player2EggDeck = deckService.getEggDeckCardsById(deckId2);
+
+                GameRoom newGameRoom = new GameRoom(gameId, player1, player1MainDeck, player1EggDeck, player2, player2MainDeck, player2EggDeck);
+                newGameRoom.setChat(new String[0]);
+
+                GameRoom existingRoom = gameRooms.putIfAbsent(gameId, newGameRoom);
+                if (existingRoom == null) {
+                    gameRoom = newGameRoom;
+                    shouldStartScheduledTasks = true;
+                } else {
+                    gameRoom = existingRoom;
+                }
+            } catch (Exception e) {
+                return;
+            }
+        }
+
+        if (shouldStartScheduledTasks) startGameRoomScheduledTasks(gameRoom);
+
+        gameRoom.addSession(session);
+        GameRoom gameRoomFromMap = gameRooms.get(gameId);
+
+        if (gameRoomFromMap.getSessions().size() >= 2) {
+            if (gameRoomFromMap.getBoardState() != null) {
+                gameRoomFromMap.sendMessagesToAll("[OPPONENT_RECONNECTED]");
+                distributeExistingBoardState(gameRoomFromMap);
+            } else if (gameRoomFromMap.getBootStage() == 0) {
+                try {
+                    gameRoomFromMap.initiateGame();
+                    gameRoomFromMap.setStartingPlayer(gameRoomFromMap.getRandomPlayer().username());
+                    scheduleCardDistribution(gameRoomFromMap);
+                } catch (Exception e) {
+                    System.err.println("Error in initial game setup for room " + gameRoomFromMap.getRoomId() + ": " + e.getMessage());
+                }
+            }
+        }
+    }
+
+    private void distributeExistingBoardState(GameRoom gameRoom) throws IOException {
+        BoardState boardState = gameRoom.getBoardState();
+        if (boardState == null) return;
+
+        gameRoom.broadcastPlayerInfo();
+        distributeBoardStateCards(gameRoom, boardState);
+        distributeChatHistory(gameRoom);
+
+        gameRoom.sendMessagesToAll("[SET_BOOT_STAGE]:" + gameRoom.getBootStage());
+        gameRoom.sendMessagesToAll("[SET_PHASE]:" + gameRoom.getPhase());
+        gameRoom.sendMessagesToAll("[SET_TURN]:" + gameRoom.getUsernameTurn());
+    }
+    
+    private void distributeChatHistory(GameRoom gameRoom) {
+        String[] chatHistory = gameRoom.getChat();
+        if (chatHistory == null || chatHistory.length == 0) return;
+        try {
+            String[] reversedChatHistory = new String[chatHistory.length];
+            for (int i = 0; i < chatHistory.length; i++) {
+                reversedChatHistory[i] = chatHistory[chatHistory.length - 1 - i];
+            }
+            String chatHistoryJson = objectMapper.writeValueAsString(reversedChatHistory);
+            gameRoom.sendMessagesToAll("[CHAT_HISTORY]:" + chatHistoryJson);
+        } catch (Exception e) {
+            gameRoom.sendMessagesToAll("[CHAT_HISTORY]:[]");
+        }
+    }
+    
+    private void distributeBoardStateCards(GameRoom gameRoom, BoardState boardState) throws IOException {
+        Map<String, Object> completeBoardState = new HashMap<>();
+        completeBoardState.put("player1Hand", boardState.getPlayer1Hand());
+        completeBoardState.put("player1Deck", boardState.getPlayer1Deck());
+        completeBoardState.put("player1EggDeck", boardState.getPlayer1EggDeck());
+        completeBoardState.put("player1Security", boardState.getPlayer1Security());
+        completeBoardState.put("player1Trash", boardState.getPlayer1Trash());
+        completeBoardState.put("player1Reveal", boardState.getPlayer1Reveal());
+        completeBoardState.put("player1BreedingArea", boardState.getPlayer1BreedingArea());
+        
+        for (int i = 1; i <= 21; i++) {
+            List<GameCard> cards = boardState.getFieldByName("player1Digi" + i);
+            completeBoardState.put("player1Digi" + i, cards);
+        }
+        for (int i = 1; i <= 16; i++) {
+            List<GameCard> cards = boardState.getFieldByName("player1Link" + i);
+            completeBoardState.put("player1Link" + i, cards);
+        }
+        
+        completeBoardState.put("player2Hand", boardState.getPlayer2Hand());
+        completeBoardState.put("player2Deck", boardState.getPlayer2Deck());
+        completeBoardState.put("player2EggDeck", boardState.getPlayer2EggDeck());
+        completeBoardState.put("player2Security", boardState.getPlayer2Security());
+        completeBoardState.put("player2Trash", boardState.getPlayer2Trash());
+        completeBoardState.put("player2Reveal", boardState.getPlayer2Reveal());
+        completeBoardState.put("player2BreedingArea", boardState.getPlayer2BreedingArea());
+        
+        for (int i = 1; i <= 21; i++) {
+            List<GameCard> cards = boardState.getFieldByName("player2Digi" + i);
+            completeBoardState.put("player2Digi" + i, cards);
+        }
+        for (int i = 1; i <= 16; i++) {
+            List<GameCard> cards = boardState.getFieldByName("player2Link" + i);
+            completeBoardState.put("player2Link" + i, cards);
+        }
+
+        completeBoardState.put("player1Memory", boardState.getPlayer1Memory());
+        completeBoardState.put("player2Memory", boardState.getPlayer2Memory());
+
+        String boardStateJson = objectMapper.writeValueAsString(completeBoardState);
+        gameRoom.sendMessagesToAll("[DISTRIBUTE_CARDS]:" + boardStateJson);
+    }
+
     private void handleAttack(GameRoom gameRoom, WebSocketSession session, String message) {
         if (!gameRoom.hasFullConnection() || message.split(":").length < 4) return;
         String[] parts = message.split(":", 4);
