@@ -2,7 +2,7 @@ import GameBackground from "../components/game/GameBackground.tsx";
 import styled from "@emotion/styled";
 import { IconButton } from "@mui/material";
 import carbackSrc from "../assets/cardBack.jpg";
-import { useCallback, useLayoutEffect, useRef, useState, useEffect } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import PlayerBoardSide from "../components/game/PlayerBoardSide/PlayerBoardSide.tsx";
 import { useGeneralStates } from "../hooks/useGeneralStates.ts";
 import { useContextMenu } from "react-contexify";
@@ -52,11 +52,10 @@ export default function GamePage() {
 
     const gameId = useGameBoardStates((state) => state.gameId);
     
-    // Spectator logic calculations safely guarded against empty gameIds
-    const p1 = gameId ? gameId.split("‗")[0] : "";
-    const p2 = gameId ? gameId.split("‗")[1] : "";
-    const isSpectator = user !== p1 && user !== p2;
-    const opponentName = isSpectator ? p2 : (p1 === user ? p2 : p1);
+    const p1 = gameId.split("‗")[0];
+    const p2 = gameId.split("‗")[1];
+    const isSpectator = false;
+    const opponentName = p1 === user ? p2 : p1;
 
     const playAttackSfx = useSound((state) => state.playAttackSfx);
     const playEffectAttackSfx = useSound((state) => state.playEffectAttackSfx);
@@ -113,19 +112,6 @@ export default function GamePage() {
         restartAttackAnimation,
     });
 
-    // ✅ LIVE ON-SCREEN ERROR BOUNDARY LOGGER FOR MOBILE/TABLET SPECATOR TESTING
-    useEffect(() => {
-        const handleError = (errorEvent: ErrorEvent) => {
-            const shortMessage = errorEvent.message || "Unknown error";
-            const file = errorEvent.filename ? errorEvent.filename.split("/").pop() : "unknown_file";
-            const line = errorEvent.lineno || "0";
-            setMessages(`【CLIENT ERROR】﹕${shortMessage} (at ${file}:${line})`);
-        };
-
-        window.addEventListener("error", handleError);
-        return () => window.removeEventListener("error", handleError);
-    }, [setMessages]);
-
     const createDropHandler = useDropZoneReactDnd({
         sendMessage,
         restartAttackAnimation,
@@ -149,12 +135,11 @@ export default function GamePage() {
     }, [createDropHandler]);
 
     function sendPhaseUpdate() {
-        if (isSpectator) return;
         sendMessage(`${gameId}:/updatePhase`);
     }
 
     function nextPhase() {
-        if (phaseLoading || isSpectator) return;
+        if (phaseLoading) return;
         setPhaseLoading(true);
         const timer = setTimeout(() => {
             setPhase();
@@ -167,10 +152,10 @@ export default function GamePage() {
     }
 
     function sendMoveCard(cardId: string, from: string, to: string) {
-        if (isSpectator) return;
         sendMessage(`${gameId}:/moveCard:${cardId}:${from}:${to}`);
     }
 
+    // Explicit typing matching exactly how player name is used
     function sendChatMessage(message: string) {
         if (!message.length) return;
         setMessages(user + "﹕" + message);
@@ -178,7 +163,6 @@ export default function GamePage() {
     }
 
     function sendSfx(sfx: string) {
-        if (isSpectator) return;
         const timeout = setTimeout(() => sendMessage(`${gameId}:/${sfx}`), 10);
         return () => clearTimeout(timeout);
     }
@@ -202,7 +186,7 @@ export default function GamePage() {
     const backend = "ontouchstart" in window ? TouchBackend : HTML5Backend;
 
     const gameContent = (
-        <BoardLayout height={height} style={isSpectator ? { pointerEvents: "none" } : {}}>
+        <BoardLayout height={height}>
             <SettingsContainer>
                 <SoundBar iconFontSize={iconWidth}>
                     <a
@@ -248,7 +232,7 @@ export default function GamePage() {
     return (
         <Container ref={boardContainerRef}>
             <GameBackground />
-            {!isSpectator && <ContextMenus wsUtils={wsUtils} />}
+            <ContextMenus wsUtils={wsUtils} />
             <AttackArrows />
             <TokenModal wsUtils={wsUtils} />
             <EndModal />
@@ -346,7 +330,6 @@ const SettingsContainer = styled.div`
     grid-column: 1 / 9;
     grid-row: 1 / 3;
     z-index: 1;
-    pointer-events: auto;
 `;
 
 const StyledIconButton = styled(IconButton)`
@@ -375,5 +358,4 @@ const ChatAndCardDialogContainerDiv = styled.div`
     filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.5));
 
     z-index: 20;
-    pointer-events: auto;
 `;

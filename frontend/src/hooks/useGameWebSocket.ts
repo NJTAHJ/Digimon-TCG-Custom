@@ -93,12 +93,10 @@ export default function useGameWebSocket(props: UseGameWebSocketProps): UseGameW
     const setFieldOffset = useGameUIStates((state) => state.setFieldOffset);
     const setOpponentFieldOffset = useGameUIStates((state) => state.setOpponentFieldOffset);
 
-    // Determines spectator perspective mapping (Views from Player 1's side)
     const p1 = gameId.split("‗")[0];
     const p2 = gameId.split("‗")[1];
-    const isSpectator = user !== p1 && user !== p2;
-    const opponentName = isSpectator ? p2 : (p1 === user ? p2 : p1);
-    const myName = isSpectator ? p1 : user;
+    const opponentName = p1 === user ? p2 : p1;
+    const myName = user;
 
     const playCoinFlipSfx = useSound((state) => state.playCoinFlipSfx);
     const playButtonClickSfx = useSound((state) => state.playButtonClickSfx);
@@ -106,7 +104,7 @@ export default function useGameWebSocket(props: UseGameWebSocketProps): UseGameW
     const playNextPhaseSfx = useSound((state) => state.playNextPhaseSfx);
     const playOpponentPlaceCardSfx = useSound((state) => state.playOpponentPlaceCardSfx);
     const playPassTurnSfx = useSound((state) => state.playPassTurnSfx);
-    const playRevealCardSfx = useSound((state) => state.playRevealCardSfx);
+    const playRevealSfx = useSound((state) => state.playRevealCardSfx);
     const playSecurityRevealSfx = useSound((state) => state.playSecurityRevealSfx);
     const playShuffleDeckSfx = useSound((state) => state.playShuffleDeckSfx);
     const playSuspendSfx = useSound((state) => state.playSuspendSfx);
@@ -147,10 +145,7 @@ export default function useGameWebSocket(props: UseGameWebSocketProps): UseGameW
             if (event.data.startsWith("[PLAYER_INFO]:")) {
                 const playersJson = event.data.substring("[PLAYER_INFO]:".length);
                 const players: Player[] = JSON.parse(playersJson);
-                // Assign mapping based on spectator's perspective
-                const firstPlayer = isSpectator ? players.find(p => p.username === p1) : players[0];
-                const secondPlayer = isSpectator ? players.find(p => p.username === p2) : players[1];
-                if (firstPlayer && secondPlayer) setPlayers(firstPlayer, secondPlayer);
+                setPlayers(players[0], players[1]);
             }
 
             if (event.data.startsWith("[SET_BOOT_STAGE]:")) {
@@ -233,9 +228,7 @@ export default function useGameWebSocket(props: UseGameWebSocketProps): UseGameW
 
             if (event.data.startsWith("[UPDATE_MEMORY]:")) {
                 const newMemory = event.data.substring("[UPDATE_MEMORY]:".length);
-                // If spectator, we invert memory so it's accurate to Player1's view
-                const memoryValue = parseInt(newMemory);
-                setMemory(isSpectator ? -memoryValue : memoryValue);
+                setMemory(parseInt(newMemory));
                 return;
             }
 
@@ -314,7 +307,7 @@ export default function useGameWebSocket(props: UseGameWebSocketProps): UseGameW
 
             if (event.data.includes("SFX")) {
                 switch (event.data) {
-                    case "[REVEAL_SFX]": playRevealCardSfx(); break;
+                    case "[REVEAL_SFX]": playRevealSfx(); break;
                     case "[SECURITY_REVEAL_SFX]": playSecurityRevealSfx(); break;
                     case "[PLACE_CARD_SFX]": playOpponentPlaceCardSfx(); break;
                     case "[DRAW_CARD_SFX]": playDrawCardSfx(); break;

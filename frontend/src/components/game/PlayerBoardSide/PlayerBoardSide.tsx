@@ -20,8 +20,6 @@ import { useGeneralStates } from "../../../hooks/useGeneralStates.ts";
 export default function PlayerBoardSide({ wsUtils }: { wsUtils?: WSUtils }) {
     const setCardWidth = useGeneralStates((state) => state.setCardWidth);
     const ref = useRef<HTMLDivElement | null>(null);
-    
-    const isSpectator = wsUtils?.matchInfo?.isSpectator;
 
     useEffect(() => {
         if (!ref.current) return;
@@ -42,24 +40,22 @@ export default function PlayerBoardSide({ wsUtils }: { wsUtils?: WSUtils }) {
             <BattleArea side={SIDE.MY} wsUtils={wsUtils} />
             <BreedingArea side={SIDE.MY} wsUtils={wsUtils} ref={ref} />
             
-            {!isSpectator && (
-                <FieldNavigationContainer>
-                    <FieldNavigationButtons side={SIDE.MY} />
-                </FieldNavigationContainer>
-            )}
+            <FieldNavigationContainer>
+                <FieldNavigationButtons side={SIDE.MY} />
+            </FieldNavigationContainer>
 
             <PlayerSecurityStack wsUtils={wsUtils} />
 
-            {!isSpectator && <PlayerEventUtils wsUtils={wsUtils} />}
+            <PlayerEventUtils wsUtils={wsUtils} />
             <PlayerTrash />
             
-            {!isSpectator && <DeckUtilButtons wsUtils={wsUtils} />}
+            <DeckUtilButtons wsUtils={wsUtils} />
             
             <PlayerDeck wsUtils={wsUtils} />
             <PlayerHand />
             
-            {!isSpectator && <TokenButton />}
-            {!isSpectator && <DragToggleButton />}
+            <TokenButton />
+            <DragToggleButton />
             
             <PlayerCard side={SIDE.MY} wsUtils={wsUtils} />
         </LayoutContainer>
