@@ -12,5 +12,4 @@ public class LobbyPlayer {
     private WebSocketSession session;
     private String name;
     boolean ready;
-    private String role; // "PLAYER" or "SPECTATOR"
 }

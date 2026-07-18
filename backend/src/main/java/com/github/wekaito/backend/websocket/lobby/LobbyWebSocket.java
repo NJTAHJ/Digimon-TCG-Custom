@@ -159,7 +159,7 @@ public class LobbyWebSocket extends TextWebSocketHandler {
                 emptyRoomTimestamps.remove(previousRoomId);
                 boolean wasHost = previousRoom.getHostName().equals(username);
                 
-                LobbyPlayer player = new LobbyPlayer(session, username, wasHost, "PLAYER");
+                LobbyPlayer player = new LobbyPlayer(session, username, wasHost);
 
                 previousRoom.getPlayers().removeIf(p -> p.getName().equals(username));
                 previousRoom.getPlayers().add(player);
@@ -363,8 +363,7 @@ public class LobbyWebSocket extends TextWebSocketHandler {
                 room.getPlayers().stream().map(p -> new LobbyPlayerDTO(
                         p.getName(),
                         mongoUserDetailsService.getAvatar(p.getName()),
-                        p.isReady(),
-                        p.getRole()))
+                        p.ready))
                         .toList());
     }
 
@@ -408,7 +407,7 @@ public class LobbyWebSocket extends TextWebSocketHandler {
                 return;
             }
 
-            LobbyPlayer player = new LobbyPlayer(session, username, host, "PLAYER");
+            LobbyPlayer player = new LobbyPlayer(session, username, host);
             String roomJson = objectMapper.writeValueAsString(getRoomDTO(room));
 
             sendTextMessage(session, "[JOIN_ROOM]:" + roomJson);
@@ -483,8 +482,7 @@ public class LobbyWebSocket extends TextWebSocketHandler {
             if (room.getHostName().equals(userName) && !room.getPlayers().isEmpty()) {
                 LobbyPlayer remainingPlayer = room.getPlayers().get(0);
                 room.setHostName(remainingPlayer.getName());
-                remainingPlayer.setReady(true);
-                remainingPlayer.setRole("PLAYER");
+                remainingPlayer.ready = true;
             }
 
             roomIsEmpty = room.getPlayers().isEmpty();
@@ -514,7 +512,7 @@ public class LobbyWebSocket extends TextWebSocketHandler {
             return;
         }
 
-        player.ready = !player.isReady();
+        player.ready = !player.ready;
         sendRoomUpdate(room);
         sendTextMessage(session, "[SUCCESS]");
     }
