@@ -65,8 +65,8 @@ public class GameWebSocket extends TextWebSocketHandler {
             GameRoom gameRoom = gameRoomOpt.get();
             gameRoom.removeSession(session);
 
-            boolean isPlayer = gameRoom.getPlayer1().username().equals(username) || 
-                               gameRoom.getPlayer2().username().equals(username);
+            boolean isPlayer = gameRoom.getPlayer1().username().equalsIgnoreCase(username) || 
+                               gameRoom.getPlayer2().username().equalsIgnoreCase(username);
 
             if (isPlayer) {
                 gameRoom.sendMessageToOtherSessions(session, "[OPPONENT_DISCONNECTED]");
@@ -101,8 +101,8 @@ public class GameWebSocket extends TextWebSocketHandler {
         Principal principal = session.getPrincipal();
         if (principal != null) {
             String username = principal.getName();
-            boolean isPlayer = gameRoom.getPlayer1().username().equals(username) || 
-                               gameRoom.getPlayer2().username().equals(username);
+            boolean isPlayer = gameRoom.getPlayer1().username().equalsIgnoreCase(username) || 
+                               gameRoom.getPlayer2().username().equalsIgnoreCase(username);
             
             if (!isPlayer) {
                 if (!roomMessage.startsWith("/heartbeat") && !roomMessage.startsWith("/chatMessage:")) {
@@ -120,7 +120,7 @@ public class GameWebSocket extends TextWebSocketHandler {
             boolean isThisPlayerStarting = roomMessage.split(":")[1].equals("first");
             String username = Objects.requireNonNull(session.getPrincipal()).getName();
             String startingPlayerUsername = isThisPlayerStarting ? username :
-                    gameRoom.getPlayer1().username().equals(username) ? gameRoom.getPlayer2().username() : gameRoom.getPlayer1().username();
+                    gameRoom.getPlayer1().username().equalsIgnoreCase(username) ? gameRoom.getPlayer2().username() : gameRoom.getPlayer1().username();
             gameRoom.initiateGame();
             gameRoom.setStartingPlayer(startingPlayerUsername);
             scheduleCardDistribution(gameRoom);
@@ -213,12 +213,12 @@ public class GameWebSocket extends TextWebSocketHandler {
     public Optional<GameRoom> findGameRoomBySession(WebSocketSession session) {
         String username = Objects.requireNonNull(session.getPrincipal()).getName();
         return gameRooms.values().stream().filter(room ->
-                room.getPlayer1().username().equals(username) || room.getPlayer2().username().equals(username)
+                room.getPlayer1().username().equalsIgnoreCase(username) || room.getPlayer2().username().equalsIgnoreCase(username)
         ).findFirst();
     }
     
     private String mapClientToServer(String clientPosition, String username, GameRoom gameRoom) {
-        boolean isPlayer1 = gameRoom.getPlayer1().username().equals(username);
+        boolean isPlayer1 = gameRoom.getPlayer1().username().equalsIgnoreCase(username);
         return switch (clientPosition) {
             case "myHand" -> isPlayer1 ? "player1Hand" : "player2Hand";
             case "myDeckField" -> isPlayer1 ? "player1Deck" : "player2Deck";
@@ -316,8 +316,8 @@ public class GameWebSocket extends TextWebSocketHandler {
 
     private String mapServerToClient(String serverPosition, String destUsername, GameRoom gameRoom) {
         // Force spectators to inherit Player 1's perspective to match the client's hardcoded P1 fallback
-        boolean isPlayer1View = gameRoom.getPlayer1().username().equals(destUsername) || 
-                                (!gameRoom.getPlayer2().username().equals(destUsername)); 
+        boolean isPlayer1View = gameRoom.getPlayer1().username().equalsIgnoreCase(destUsername) || 
+                                (!gameRoom.getPlayer2().username().equalsIgnoreCase(destUsername)); 
         
         return switch (serverPosition) {
             case "player1Hand" -> isPlayer1View ? "myHand" : "opponentHand";
@@ -423,7 +423,7 @@ public class GameWebSocket extends TextWebSocketHandler {
 
         List<GameCard> fromList = boardState.getFieldByName(fromServer);
         GameCard cardToMove = fromList.stream()
-                .filter(card -> card.getId().toString().equals(cardId))
+                .filter(card -> card.getId().toString().equalsIgnoreCase(cardId)) // ✅ FIXED: Case-insensitive ID checks
                 .findFirst()
                 .orElse(null);
 
@@ -463,7 +463,7 @@ public class GameWebSocket extends TextWebSocketHandler {
 
         List<GameCard> fromList = boardState.getFieldByName(fromServer);
         GameCard cardToMove = fromList.stream()
-                .filter(card -> card.getId().toString().equals(cardId))
+                .filter(card -> card.getId().toString().equalsIgnoreCase(cardId)) // ✅ FIXED: Case-insensitive ID checks
                 .findFirst()
                 .orElse(null);
 
@@ -520,15 +520,15 @@ public class GameWebSocket extends TextWebSocketHandler {
 
     private void broadcastGameAction(GameRoom gameRoom, WebSocketSession sender, String actionType, String cardId, String from, String to, String... extra) {
         String username = sender.getPrincipal() != null ? sender.getPrincipal().getName() : "";
-        boolean isSenderPlayer1 = gameRoom.getPlayer1().username().equals(username);
+        boolean isSenderPlayer1 = gameRoom.getPlayer1().username().equalsIgnoreCase(username); // ✅ FIXED: Case-insensitive checks
 
         for (WebSocketSession s : gameRoom.getSessions()) {
             if (!s.isOpen()) continue;
             if (s.getId().equals(sender.getId())) continue;
 
             String destUsername = s.getPrincipal() != null ? s.getPrincipal().getName() : "";
-            boolean isDestPlayer = gameRoom.getPlayer1().username().equals(destUsername) || 
-                                   gameRoom.getPlayer2().username().equals(destUsername);
+            boolean isDestPlayer = gameRoom.getPlayer1().username().equalsIgnoreCase(destUsername) || 
+                                   gameRoom.getPlayer2().username().equalsIgnoreCase(destUsername);
 
             String finalFrom;
             String finalTo;
@@ -620,7 +620,7 @@ public class GameWebSocket extends TextWebSocketHandler {
 
         gameRoom.addSession(session);
         String username = Objects.requireNonNull(session.getPrincipal()).getName();
-        boolean isPlayer = gameRoom.getPlayer1().username().equals(username) || gameRoom.getPlayer2().username().equals(username);
+        boolean isPlayer = gameRoom.getPlayer1().username().equalsIgnoreCase(username) || gameRoom.getPlayer2().username().equalsIgnoreCase(username); // ✅ FIXED: Case-insensitive checks
 
         // Instantly tell the joining session who Player 1 and Player 2 are so the frontend knows if they are a spectator
         List<Player> players = new ArrayList<>(List.of(gameRoom.getPlayer1(), gameRoom.getPlayer2()));
@@ -725,15 +725,15 @@ public class GameWebSocket extends TextWebSocketHandler {
         String isEffect = parts[3];
 
         String username = Objects.requireNonNull(session.getPrincipal()).getName();
-        boolean isSenderPlayer1 = gameRoom.getPlayer1().username().equals(username);
+        boolean isSenderPlayer1 = gameRoom.getPlayer1().username().equalsIgnoreCase(username); // ✅ FIXED: Case-insensitive checks
 
         for (WebSocketSession s : gameRoom.getSessions()) {
             if (!s.isOpen()) continue;
             if (s.getId().equals(session.getId())) continue;
 
             String destUsername = s.getPrincipal() != null ? s.getPrincipal().getName() : "";
-            boolean isDestPlayer = gameRoom.getPlayer1().username().equals(destUsername) || 
-                                   gameRoom.getPlayer2().username().equals(destUsername);
+            boolean isDestPlayer = gameRoom.getPlayer1().username().equalsIgnoreCase(destUsername) || 
+                                   gameRoom.getPlayer2().username().equalsIgnoreCase(destUsername);
 
             String finalFrom;
             String finalTo;
@@ -838,7 +838,7 @@ public class GameWebSocket extends TextWebSocketHandler {
 
         String serverLocation = mapClientToServer(location, username, gameRoom);
         List<GameCard> cards = boardState.getFieldByName(serverLocation);
-        cards.stream().filter(c -> c.getId().toString().equals(cardId)).findFirst().ifPresent(GameCard::tilt);
+        cards.stream().filter(c -> c.getId().toString().equalsIgnoreCase(cardId)).findFirst().ifPresent(GameCard::tilt); // ✅ FIXED: Case-insensitive ID checks
         boardState.setFieldByName(serverLocation, cards);
     }
 
@@ -850,7 +850,7 @@ public class GameWebSocket extends TextWebSocketHandler {
 
         String serverLocation = mapClientToServer(location, username, gameRoom);
         List<GameCard> cards = boardState.getFieldByName(serverLocation);
-        cards.stream().filter(c -> c.getId().toString().equals(cardId)).findFirst().ifPresent(GameCard::flip);
+        cards.stream().filter(c -> c.getId().toString().equalsIgnoreCase(cardId)).findFirst().ifPresent(GameCard::flip); // ✅ FIXED: Case-insensitive ID checks
         boardState.setFieldByName(serverLocation, cards);
     }
 
@@ -864,7 +864,7 @@ public class GameWebSocket extends TextWebSocketHandler {
         try {
             Modifiers newModifiers = objectMapper.readValue(modifiersJson, Modifiers.class);
             List<GameCard> cards = boardState.getFieldByName(serverLocation);
-            cards.stream().filter(c -> c.getId().toString().equals(cardId)).findFirst().ifPresent(c -> c.setModifiers(newModifiers));
+            cards.stream().filter(c -> c.getId().toString().equalsIgnoreCase(cardId)).findFirst().ifPresent(c -> c.setModifiers(newModifiers)); // ✅ FIXED: Case-insensitive ID checks
             boardState.setFieldByName(serverLocation, cards);
         } catch (Exception e) {
             // ignore
@@ -883,7 +883,7 @@ public class GameWebSocket extends TextWebSocketHandler {
         String username = session.getPrincipal() != null ? session.getPrincipal().getName() : null;
         if (username == null) return;
 
-        boolean isPlayer1 = gameRoom.getPlayer1().username().equals(username);
+        boolean isPlayer1 = gameRoom.getPlayer1().username().equalsIgnoreCase(username); // ✅ FIXED: Case-insensitive checks
         for (int i = 1; i <= 21; i++) {
             String digiPosition = isPlayer1 ? "player1Digi" + i : "player2Digi" + i;
             List<GameCard> cards = boardState.getFieldByName(digiPosition);
@@ -924,7 +924,7 @@ public class GameWebSocket extends TextWebSocketHandler {
         if (boardState != null) {
             String currentPlayer = session.getPrincipal() != null ? session.getPrincipal().getName() : null;
             if (currentPlayer != null) {
-                boolean isPlayer1 = gameRoom.getPlayer1().username().equals(currentPlayer);
+                boolean isPlayer1 = gameRoom.getPlayer1().username().equalsIgnoreCase(currentPlayer); // ✅ FIXED: Case-insensitive checks
                 int newMemory = Integer.parseInt(parts[1]);
                 if (isPlayer1) {
                     boardState.setPlayer1Memory(newMemory);
@@ -947,7 +947,7 @@ public class GameWebSocket extends TextWebSocketHandler {
     }
     
     public void broadcastServerMessageToAllGameRooms(String message) {
-        String formattedMessage = "[CHAT_MESSAGE]:【SERVER】﹕" + message;
+        String formattedMessage = "[CHAT_MESSAGE]:(SERVER)﹕" + message;
         for (GameRoom gameRoom : gameRooms.values()) {
             gameRoom.sendMessagesToAll(formattedMessage);
         }
