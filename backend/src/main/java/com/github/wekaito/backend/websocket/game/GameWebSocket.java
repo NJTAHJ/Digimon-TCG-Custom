@@ -26,13 +26,23 @@ import java.util.concurrent.*;
 public class GameWebSocket extends TextWebSocketHandler {
 
     private final MongoUserDetailsService mongoUserDetailsService;
+
     private final DeckService deckService;
+    
     private final CardJsonConverter cardJsonConverter;
 
     public final ConcurrentHashMap<String, GameRoom> gameRooms = new ConcurrentHashMap<>();
+    
     private static final ScheduledExecutorService SHARED_SCHEDULER = Executors.newScheduledThreadPool(10);
+
     private static final ObjectMapper objectMapper = new ObjectMapper();
+
     private static final String[] simpleIdCommands = {"/updateAttackPhase", "/activateEffect", "/activateTarget", "/emote"};
+    
+    private static final Set<String> DESTROY_TOKEN_LOCATIONS = Set.of(
+        "player1Hand", "player1Deck", "player1EggDeck", "player1Trash", "player1Security", "player1BreedingArea",
+        "player2Hand", "player2Deck", "player2EggDeck", "player2Trash", "player2Security", "player2BreedingArea"
+    );
 
     @Override
     public void afterConnectionEstablished(@NonNull WebSocketSession session) {
@@ -43,6 +53,7 @@ public class GameWebSocket extends TextWebSocketHandler {
     public void afterConnectionClosed(@NonNull WebSocketSession session, @NonNull CloseStatus status) {
         Principal principal = session.getPrincipal();
         if (principal == null) return;
+
         String username = principal.getName();
 
         Optional<GameRoom> gameRoomOpt = gameRooms.values().stream().filter(room ->
@@ -51,9 +62,11 @@ public class GameWebSocket extends TextWebSocketHandler {
 
         if (gameRoomOpt.isPresent()) {
             GameRoom gameRoom = gameRoomOpt.get();
+            // Notify remaining active sessions about disconnection
             gameRoom.sendMessageToOtherSessions(session, "[OPPONENT_DISCONNECTED]");
             gameRoom.removeSession(session);
 
+            // Use isEmpty method that checks for actually open sessions
             if (gameRoom.isEmpty()) {
                 GameRoom removed = gameRooms.remove(gameRoom.getRoomId());
                 if (removed != null) {
@@ -77,9 +90,10 @@ public class GameWebSocket extends TextWebSocketHandler {
         String roomMessage = parts[1];
 
         GameRoom gameRoom = findGameRoomById(gameId);
+
         if (gameRoom == null) return;
 
-        if (roomMessage.startsWith("/mulligan:")) {
+        if(roomMessage.startsWith("/mulligan:")) {
             boolean currentPlayerDecision = roomMessage.split(":")[1].equals("true");
             gameRoom.setMulliganDecisionForSession(session, currentPlayerDecision);
         }
@@ -95,17 +109,29 @@ public class GameWebSocket extends TextWebSocketHandler {
         }
 
         if (roomMessage.startsWith("/heartbeat")) gameRoom.updateLastHearBeat(session);
+
         if (roomMessage.startsWith("/attack:")) handleAttack(gameRoom, session, roomMessage);
+
         if (roomMessage.startsWith("/moveCard:")) handleSendMoveCard(gameRoom, session, roomMessage);
+
         if (roomMessage.startsWith("/moveCardToStack:")) handleSendMoveToStack(gameRoom, session, roomMessage);
+
         if (roomMessage.startsWith("/setModifiers:")) handleSendSetModifiers(gameRoom, session, roomMessage);
+
         if (roomMessage.startsWith("/tiltCard:")) handleTiltCard(gameRoom, session, roomMessage);
+
         if (roomMessage.startsWith("/flipCard:")) handleFlipCard(gameRoom, session, roomMessage);
+
         if (roomMessage.startsWith("/updateMemory:")) handleMemoryUpdate(gameRoom, session, roomMessage);
+
         if (roomMessage.startsWith("/chatMessage:")) sendChatMessage(gameRoom, session, roomMessage);
+
         if (roomMessage.startsWith("/createToken:")) handleCreateToken(gameRoom, session, roomMessage);
+
         if (roomMessage.startsWith("/unsuspendAll:")) handleUnsuspendAll(gameRoom, session);
-        if (Arrays.stream(simpleIdCommands).anyMatch(roomMessage::startsWith)) handleCommandWithId(gameRoom, session, roomMessage);
+
+        if(Arrays.stream(simpleIdCommands).anyMatch(roomMessage::startsWith)) handleCommandWithId(gameRoom, session, roomMessage);
+
         else {
             String[] roomMessageParts = roomMessage.split(":", 2);
             String command = roomMessageParts[0];
@@ -122,16 +148,20 @@ public class GameWebSocket extends TextWebSocketHandler {
         if (roomMessageParts.length < 2) return;
         String chatMessage = roomMessageParts[1];
         
+        // Store chat message in GameRoom
         String formattedMessage = userName + "﹕" + chatMessage;
         storeChatMessage(gameRoom, formattedMessage);
+
         gameRoom.sendMessageToOtherSessions(session, "[CHAT_MESSAGE]:" + formattedMessage);
     }
     
     private void storeChatMessage(GameRoom gameRoom, String message) {
         String[] currentChat = gameRoom.getChat();
         if (currentChat == null) {
+            // Initialize chat array with first message
             gameRoom.setChat(new String[]{message});
         } else {
+            // Append new message to existing chat array
             String[] newChat = new String[currentChat.length + 1];
             System.arraycopy(currentChat, 0, newChat, 0, currentChat.length);
             newChat[currentChat.length] = message;
@@ -139,6 +169,7 @@ public class GameWebSocket extends TextWebSocketHandler {
         }
     }
 
+    /* These actions do not alter the board state, therefore do not need a separate handler */
     private String convertCommand(String command) {
         return switch (command) {
             case "/surrender" -> "[SURRENDER]";
@@ -211,11 +242,11 @@ public class GameWebSocket extends TextWebSocketHandler {
             case "myDigi14" -> isPlayer1 ? "player1Digi14" : "player2Digi14";
             case "myDigi15" -> isPlayer1 ? "player1Digi15" : "player2Digi15";
             case "myDigi16" -> isPlayer1 ? "player1Digi16" : "player2Digi16";
-            case "myDigi17" -> isPlayer1 ? "player1Digi17" : "player2Digi17";
-            case "myDigi18" -> isPlayer1 ? "player1Digi18" : "player2Digi18";
-            case "myDigi19" -> isPlayer1 ? "player1Digi19" : "player2Digi19";
-            case "myDigi20" -> isPlayer1 ? "player1Digi20" : "player2Digi20";
-            case "myDigi21" -> isPlayer1 ? "player1Digi21" : "player2Digi21";
+            case "myDigi17" -> isPlayer1 ? "player1Digi17" : "player2Digi17"; // Tamer
+            case "myDigi18" -> isPlayer1 ? "player1Digi18" : "player2Digi18"; // Tamer
+            case "myDigi19" -> isPlayer1 ? "player1Digi19" : "player2Digi19"; // Tamer
+            case "myDigi20" -> isPlayer1 ? "player1Digi20" : "player2Digi20"; // Tamer
+            case "myDigi21" -> isPlayer1 ? "player1Digi21" : "player2Digi21"; // Tamer
             case "myLink1" -> isPlayer1 ? "player1Link1" : "player2Link1";
             case "myLink2" -> isPlayer1 ? "player1Link2" : "player2Link2";
             case "myLink3" -> isPlayer1 ? "player1Link3" : "player2Link3";
@@ -232,7 +263,7 @@ public class GameWebSocket extends TextWebSocketHandler {
             case "myLink14" -> isPlayer1 ? "player1Link14" : "player2Link14";
             case "myLink15" -> isPlayer1 ? "player1Link15" : "player2Link15";
             case "myLink16" -> isPlayer1 ? "player1Link16" : "player2Link16";
-            default -> clientPosition;
+            default -> clientPosition; // Return as-is if not recognized
         };
     }
 
@@ -243,6 +274,7 @@ public class GameWebSocket extends TextWebSocketHandler {
         String fromServer = mapClientToServer(fromClient, username, gameRoom);
         String toServer = mapClientToServer(toClient, username, gameRoom);
 
+        // Find and remove card from source position using stream API
         List<GameCard> fromList = boardState.getFieldByName(fromServer);
         GameCard cardToMove = fromList.stream()
                 .filter(card -> card.getId().toString().equals(cardId))
@@ -254,24 +286,34 @@ public class GameWebSocket extends TextWebSocketHandler {
         fromList.remove(cardToMove);
         boardState.setFieldByName(fromServer, fromList);
 
-        if (toServer.contains("Hand") || toServer.contains("Deck") || toServer.contains("EggDeck") || toServer.contains("Trash") || toServer.contains("Security")) {
-            if (cardToMove.getUniqueCardNumber().contains("TOKEN")) return;
+        // Check if token being destroyed
+        if (DESTROY_TOKEN_LOCATIONS.contains(toServer) && cardToMove.getUniqueCardNumber().contains("TOKEN")) {
+            return;
         }
 
-        if (topOrBottom.equals("Top")) cardToMove.setIsTilted(false);
+        // Unsuspend if adding to top of stack
+        if (topOrBottom.equals("Top")) {
+            cardToMove.setIsTilted(false);
+        }
 
-        if (toServer.equals("player1Hand") || toServer.equals("player2Hand") ||
-            toServer.equals("player1Deck") || toServer.equals("player2Deck") ||
-            toServer.equals("player1EggDeck") || toServer.equals("player2EggDeck") ||
-            toServer.equals("player1Trash") || toServer.equals("player2Trash")) {
+        // Reset modifiers if moving to certain locations
+        if (shouldResetModifiersOnMove(toServer)) {
             cardToMove.setModifiers(new Modifiers(0, 0, new ArrayList<>(), cardToMove.getColor()));
         }
 
-        if (facing != null) cardToMove.setIsFaceUp(facing.equals("up"));
+        // Handle face status based on facing parameter
+        if (facing != null) {
+            cardToMove.setIsFaceUp(facing.equals("up"));
+        }
 
+        // Add card to destination stack
         List<GameCard> toList = boardState.getFieldByName(toServer);
-        if (topOrBottom.equals("Top")) toList.add(0, cardToMove);
-        else toList.add(cardToMove);
+
+        if (topOrBottom.equals("Top")) {
+            toList.add(0, cardToMove);
+        } else {
+            toList.add(cardToMove);
+        }
 
         boardState.setFieldByName(toServer, toList);
     }
@@ -283,6 +325,7 @@ public class GameWebSocket extends TextWebSocketHandler {
         String fromServer = mapClientToServer(fromClient, username, gameRoom);
         String toServer = mapClientToServer(toClient, username, gameRoom);
 
+        // Find and remove card from source position
         List<GameCard> fromList = boardState.getFieldByName(fromServer);
         GameCard cardToMove = fromList.stream()
                 .filter(card -> card.getId().toString().equals(cardId))
@@ -294,50 +337,105 @@ public class GameWebSocket extends TextWebSocketHandler {
         fromList.remove(cardToMove);
         boardState.setFieldByName(fromServer, fromList);
 
-        if (toServer.contains("Hand") || toServer.contains("Deck") || toServer.contains("EggDeck") || toServer.contains("Trash") || toServer.contains("Security")) {
-            if (cardToMove.getUniqueCardNumber().contains("TOKEN")) return;
+        // Check if token being destroyed
+        if (DESTROY_TOKEN_LOCATIONS.contains(toServer) && cardToMove.getUniqueCardNumber().contains("TOKEN")) {
+            return;
         }
 
-        if (toServer.equals("player1Hand") || toServer.equals("player2Hand") ||
-            toServer.equals("player1Deck") || toServer.equals("player2Deck") ||
-            toServer.equals("player1EggDeck") || toServer.equals("player2EggDeck") ||
-            toServer.equals("player1Trash") || toServer.equals("player2Trash")) {
+        // Reset modifiers if moving to certain locations
+        if (shouldResetModifiersOnMove(toServer)) {
             cardToMove.setModifiers(new Modifiers(0, 0, new ArrayList<>(), cardToMove.getColor()));
         }
 
-        if (toServer.contains("Hand") || toServer.contains("Deck")) cardToMove.setIsFaceUp(false);
-        else if (fromServer.contains("EggDeck") || toServer.contains("Reveal") || toServer.contains("Trash") || (fromServer.contains("Hand") && !toServer.contains("Hand") && !toServer.contains("Deck"))) {
+        // Determine face up/down status
+        if (shouldBeFaceDown(toServer)) {
+            cardToMove.setIsFaceUp(false);
+        } else if (shouldBeFaceUp(fromServer, toServer)) {
             cardToMove.setIsFaceUp(true);
         }
+        // else keep current face status
 
+        // Get destination list and check for stacking
         List<GameCard> toList = boardState.getFieldByName(toServer);
+
         if (!toList.isEmpty() && !fromServer.equals(toServer)) {
+            // Stacking cards - inherit modifiers and tilt from previous top card
             GameCard prevTopCard = toList.get(toList.size() - 1);
+
+            // Tilt inheritance
             if (prevTopCard.isTilted) {
                 prevTopCard.isTilted = false;
-                cardToMove.setIsTilted(!(toServer.contains("Digi17") || toServer.contains("Digi18") || toServer.contains("Digi19") || toServer.contains("Digi20") || toServer.contains("Digi21")));
+                // Don't tilt if going to tamer location (Digi17-21)
+                cardToMove.setIsTilted(!(toServer.contains("Digi17") || toServer.contains("Digi18") ||
+                                       toServer.contains("Digi19") || toServer.contains("Digi20") ||
+                                       toServer.contains("Digi21")));
             } else {
                 cardToMove.setIsTilted(false);
             }
 
+            // Modifier inheritance - create new Modifiers instances since it's a record
             Modifiers cardMods = cardToMove.getModifiers();
             Modifiers prevMods = prevTopCard.getModifiers();
 
+            // Determine inherited values for the moving card
             int newCardPlusDp = (cardMods.plusDp() == 0) ? prevMods.plusDp() : cardMods.plusDp();
             int newCardPlusSecurityAttacks = (cardMods.plusSecurityAttacks() == 0) ? prevMods.plusSecurityAttacks() : cardMods.plusSecurityAttacks();
             List<String> newCardKeywords = cardMods.keywords().isEmpty() ? new ArrayList<>(prevMods.keywords()) : cardMods.keywords();
 
-            Modifiers newCardModifiers = new Modifiers(newCardPlusDp, newCardPlusSecurityAttacks, newCardKeywords, cardMods.colors());
-            Modifiers newPrevModifiers = new Modifiers(0, 0, new ArrayList<>(), prevTopCard.getColor());
+            // Create new Modifiers for the moving card with inherited values
+            Modifiers newCardModifiers = new Modifiers(
+                newCardPlusDp,
+                newCardPlusSecurityAttacks,
+                newCardKeywords,
+                cardMods.colors()
+            );
+
+            // Create new Modifiers for the previous top card with reset values
+            Modifiers newPrevModifiers = new Modifiers(
+                0,
+                0,
+                new ArrayList<>(),
+                prevTopCard.getColor()
+            );
 
             cardToMove.setModifiers(newCardModifiers);
             prevTopCard.setModifiers(newPrevModifiers);
         } else if (fromServer.equals(toServer)) {
+            // Same location move - just reorder
             cardToMove.setIsTilted(false);
         }
 
         toList.add(cardToMove);
         boardState.setFieldByName(toServer, toList);
+    }
+    
+    private boolean shouldBeFaceUp(String fromField, String toField) {
+        // Cards from EggDeck are always face up
+        if (fromField.contains("EggDeck")) return true;
+
+        // Cards going to Reveal or Trash are face up
+        if (toField.contains("Reveal") || toField.contains("Trash")) return true;
+
+        // Cards from Hand (going to non-hand/deck locations) are face up
+        if (fromField.contains("Hand") &&
+            !toField.contains("Hand") && !toField.contains("Deck")) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean shouldBeFaceDown(String toField) {
+        // Cards going to Hand or Deck are face down
+        return toField.contains("Hand") || toField.contains("Deck");
+    }
+    
+    private boolean shouldResetModifiersOnMove(String toServer) {
+        // Reset modifiers for Hand, Deck, EggDeck, Trash (NOT Security, NOT BreedingArea)
+        return toServer.equals("player1Hand") || toServer.equals("player2Hand") ||
+               toServer.equals("player1Deck") || toServer.equals("player2Deck") ||
+               toServer.equals("player1EggDeck") || toServer.equals("player2EggDeck") ||
+               toServer.equals("player1Trash") || toServer.equals("player2Trash");
     }
 
     private void computeGameRoom(WebSocketSession session, String gameId) throws IOException {
@@ -346,13 +444,17 @@ public class GameWebSocket extends TextWebSocketHandler {
 
         if (gameRoom == null) {
             String[] usernames = gameId.split("‗");
+
             try {
                 String avatar1 = mongoUserDetailsService.getAvatar(usernames[0]);
                 String avatar2 = mongoUserDetailsService.getAvatar(usernames[1]);
+
                 String deckId1 = mongoUserDetailsService.getActiveDeck(usernames[0]);
                 String deckId2 = mongoUserDetailsService.getActiveDeck(usernames[1]);
+
                 String mainSleeve1 = deckService.getDeckSleeveById(deckId1);
                 String mainSleeve2 = deckService.getDeckSleeveById(deckId2);
+
                 String eggSleeve1 = deckService.getEggDeckSleeveById(deckId1);
                 String eggSleeve2 = deckService.getEggDeckSleeveById(deckId2);
 
@@ -361,6 +463,7 @@ public class GameWebSocket extends TextWebSocketHandler {
 
                 List<Card> player1MainDeck = deckService.getMainDeckCardsById(deckId1);
                 List<Card> player1EggDeck = deckService.getEggDeckCardsById(deckId1);
+
                 List<Card> player2MainDeck = deckService.getMainDeckCardsById(deckId2);
                 List<Card> player2EggDeck = deckService.getEggDeckCardsById(deckId2);
 
@@ -372,23 +475,28 @@ public class GameWebSocket extends TextWebSocketHandler {
                     gameRoom = newGameRoom;
                     shouldStartScheduledTasks = true;
                 } else {
-                    gameRoom = existingRoom;
+                    gameRoom = existingRoom; // Another thread created it first
                 }
             } catch (Exception e) {
                 return;
             }
         }
 
-        if (shouldStartScheduledTasks) startGameRoomScheduledTasks(gameRoom);
+        if (shouldStartScheduledTasks) {
+            startGameRoomScheduledTasks(gameRoom);
+        }
 
         gameRoom.addSession(session);
-        GameRoom gameRoomFromMap = gameRooms.get(gameId);
+
+        GameRoom gameRoomFromMap = gameRooms.get(gameId); // Retrieve again to ensure consistency
 
         if (gameRoomFromMap.getSessions().size() >= 2) {
             if (gameRoomFromMap.getBoardState() != null) {
                 gameRoomFromMap.sendMessagesToAll("[OPPONENT_RECONNECTED]");
                 distributeExistingBoardState(gameRoomFromMap);
-            } else if (gameRoomFromMap.getBootStage() == 0) {
+            }
+
+            else if (gameRoomFromMap.getBootStage() == 0) {
                 try {
                     gameRoomFromMap.initiateGame();
                     gameRoomFromMap.setStartingPlayer(gameRoomFromMap.getRandomPlayer().username());
@@ -416,7 +524,9 @@ public class GameWebSocket extends TextWebSocketHandler {
     private void distributeChatHistory(GameRoom gameRoom) {
         String[] chatHistory = gameRoom.getChat();
         if (chatHistory == null || chatHistory.length == 0) return;
+        
         try {
+            // Reverse the chat history to match frontend ordering (newest first)
             String[] reversedChatHistory = new String[chatHistory.length];
             for (int i = 0; i < chatHistory.length; i++) {
                 reversedChatHistory[i] = chatHistory[chatHistory.length - 1 - i];
@@ -424,12 +534,16 @@ public class GameWebSocket extends TextWebSocketHandler {
             String chatHistoryJson = objectMapper.writeValueAsString(reversedChatHistory);
             gameRoom.sendMessagesToAll("[CHAT_HISTORY]:" + chatHistoryJson);
         } catch (Exception e) {
+            // Fallback to empty array if serialization fails or max message size exceeded
             gameRoom.sendMessagesToAll("[CHAT_HISTORY]:[]");
         }
     }
     
     private void distributeBoardStateCards(GameRoom gameRoom, BoardState boardState) throws IOException {
+        // Create complete board state object including all positions
         Map<String, Object> completeBoardState = new HashMap<>();
+        
+        // Add all card positions
         completeBoardState.put("player1Hand", boardState.getPlayer1Hand());
         completeBoardState.put("player1Deck", boardState.getPlayer1Deck());
         completeBoardState.put("player1EggDeck", boardState.getPlayer1EggDeck());
@@ -438,15 +552,19 @@ public class GameWebSocket extends TextWebSocketHandler {
         completeBoardState.put("player1Reveal", boardState.getPlayer1Reveal());
         completeBoardState.put("player1BreedingArea", boardState.getPlayer1BreedingArea());
         
+        // Add all digimon field positions
         for (int i = 1; i <= 21; i++) {
             List<GameCard> cards = boardState.getFieldByName("player1Digi" + i);
             completeBoardState.put("player1Digi" + i, cards);
         }
+        
+        // Add all link positions
         for (int i = 1; i <= 16; i++) {
             List<GameCard> cards = boardState.getFieldByName("player1Link" + i);
             completeBoardState.put("player1Link" + i, cards);
         }
         
+        // Add player2 positions
         completeBoardState.put("player2Hand", boardState.getPlayer2Hand());
         completeBoardState.put("player2Deck", boardState.getPlayer2Deck());
         completeBoardState.put("player2EggDeck", boardState.getPlayer2EggDeck());
@@ -459,11 +577,13 @@ public class GameWebSocket extends TextWebSocketHandler {
             List<GameCard> cards = boardState.getFieldByName("player2Digi" + i);
             completeBoardState.put("player2Digi" + i, cards);
         }
+        
         for (int i = 1; i <= 16; i++) {
             List<GameCard> cards = boardState.getFieldByName("player2Link" + i);
             completeBoardState.put("player2Link" + i, cards);
         }
 
+        // Add memory values
         completeBoardState.put("player1Memory", boardState.getPlayer1Memory());
         completeBoardState.put("player2Memory", boardState.getPlayer2Memory());
 
@@ -486,10 +606,15 @@ public class GameWebSocket extends TextWebSocketHandler {
         String cardId = parts[1];
         String from = parts[2];
         String to = parts[3];
+        
+        // Get current player username
         String currentPlayer = session.getPrincipal() != null ? session.getPrincipal().getName() : null;
+                
         if (currentPlayer != null) {
+            // Update BoardState
             updateBoardStateForCardMove(gameRoom, cardId, from, to, currentPlayer);
         }
+
         gameRoom.sendMessageToOtherSessions(session, "[MOVE_CARD]:" + cardId + ":" + getOppositePosition(from) + ":" + getOppositePosition(to));
     }
 
@@ -501,6 +626,7 @@ public class GameWebSocket extends TextWebSocketHandler {
         String modifiersJson = String.join(":", Arrays.copyOfRange(parts, 4, parts.length));
 
         updateCardModifiers(session, gameRoom, cardId, location, modifiersJson);
+
         gameRoom.sendMessageToOtherSessions(session, "[SET_MODIFIERS]:" + cardId + ":" + getOppositePosition(location) + ":" + modifiersJson);
     }
 
@@ -512,10 +638,15 @@ public class GameWebSocket extends TextWebSocketHandler {
         String from = parts[3];
         String to = parts[4];
         String facing = parts[5];
+
+        // Get current player username
         String currentPlayer = session.getPrincipal() != null ? session.getPrincipal().getName() : null;
+        
         if (currentPlayer != null) {
+            // Update BoardState for stack move
             updateBoardStateForStackMove(gameRoom, cardId, from, to, topOrBottom, facing, currentPlayer);
         }
+        
         gameRoom.sendMessageToOtherSessions(session, "[MOVE_CARD_TO_STACK]:" + topOrBottom + ":" + cardId + ":" + getOppositePosition(from) + ":" + getOppositePosition(to) + ":" + facing);
     }
 
@@ -526,6 +657,7 @@ public class GameWebSocket extends TextWebSocketHandler {
         String location = parts[3];
 
         updateCardTiltStatus(session, gameRoom, cardId, location);
+        
         gameRoom.sendMessageToOtherSessions(session, "[TILT_CARD]:" + cardId + ":" + getOppositePosition(location));
     }
 
@@ -536,6 +668,7 @@ public class GameWebSocket extends TextWebSocketHandler {
         String location = parts[2];
 
         updateCardFaceStatus(session, gameRoom, cardId, location);
+
         gameRoom.sendMessageToOtherSessions(session, "[FLIP_CARD]:" + cardId + ":" + getOppositePosition(location));
     }
 
@@ -546,6 +679,7 @@ public class GameWebSocket extends TextWebSocketHandler {
         if (username == null) return;
 
         String serverLocation = mapClientToServer(location, username, gameRoom);
+
         List<GameCard> cards = boardState.getFieldByName(serverLocation);
         cards.stream().filter(c -> c.getId().toString().equals(cardId)).findFirst().ifPresent(GameCard::tilt);
         boardState.setFieldByName(serverLocation, cards);
@@ -558,6 +692,7 @@ public class GameWebSocket extends TextWebSocketHandler {
         if (username == null) return;
 
         String serverLocation = mapClientToServer(location, username, gameRoom);
+
         List<GameCard> cards = boardState.getFieldByName(serverLocation);
         cards.stream().filter(c -> c.getId().toString().equals(cardId)).findFirst().ifPresent(GameCard::flip);
         boardState.setFieldByName(serverLocation, cards);
@@ -570,19 +705,25 @@ public class GameWebSocket extends TextWebSocketHandler {
         if (username == null) return;
 
         String serverLocation = mapClientToServer(location, username, gameRoom);
+
         try {
             Modifiers newModifiers = objectMapper.readValue(modifiersJson, Modifiers.class);
+
             List<GameCard> cards = boardState.getFieldByName(serverLocation);
             cards.stream().filter(c -> c.getId().toString().equals(cardId)).findFirst().ifPresent(c -> c.setModifiers(newModifiers));
             boardState.setFieldByName(serverLocation, cards);
+
         } catch (Exception e) {
-            // ignore
+            // Log error or handle gracefully
         }
     }
 
     private void handleUnsuspendAll(GameRoom gameRoom, WebSocketSession session) {
         if (!gameRoom.hasFullConnection()) return;
+
+        // Update BoardState - unsuspend all cards in Digi fields for the current player
         unsuspendAllCardsInBoardState(gameRoom, session);
+
         gameRoom.sendMessageToOtherSessions(session, "[UNSUSPEND_ALL]");
     }
     
@@ -593,6 +734,8 @@ public class GameWebSocket extends TextWebSocketHandler {
         if (username == null) return;
 
         boolean isPlayer1 = gameRoom.getPlayer1().username().equals(username);
+        
+        // Unsuspend all cards in Digi1-21 positions for the current player
         for (int i = 1; i <= 21; i++) {
             String digiPosition = isPlayer1 ? "player1Digi" + i : "player2Digi" + i;
             List<GameCard> cards = boardState.getFieldByName(digiPosition);
@@ -606,10 +749,15 @@ public class GameWebSocket extends TextWebSocketHandler {
         String[] parts = roomMessage.split(":", 3);
         String targetPosition = parts[1];
         String cardJson = parts[2];
+
+        // Get current player username
         String currentPlayer = session.getPrincipal() != null ? session.getPrincipal().getName() : null;
+        
         if (currentPlayer != null) {
             try {
                 GameCard card = cardJsonConverter.convertToGameCard(cardJson);
+                
+                // Persist card in BoardState at the specified target position
                 BoardState boardState = gameRoom.getBoardState();
                 if (boardState != null) {
                     String serverPosition = mapClientToServer(targetPosition, currentPlayer, gameRoom);
@@ -617,7 +765,10 @@ public class GameWebSocket extends TextWebSocketHandler {
                     currentList.add(card);
                     boardState.setFieldByName(serverPosition, currentList);
                 }
-                gameRoom.sendMessageToOtherSessions(session, "[CREATE_TOKEN]:" + card.getId() + ":" + card.getName() + ":" + getOppositePosition(targetPosition));
+
+                gameRoom.sendMessageToOtherSessions(session, 
+                    "[CREATE_TOKEN]:" + card.getId() + ":" + card.getName() + ":" + getOppositePosition(targetPosition));
+                    
             } catch (Exception e) {
                 System.err.println("ERROR in handleCreateToken: " + e.getMessage());
             }
@@ -628,9 +779,13 @@ public class GameWebSocket extends TextWebSocketHandler {
         if (!gameRoom.hasFullConnection() || roomMessage.split(":").length < 2) return;
         String[] parts = roomMessage.split(":", 2);
         int memory = Integer.parseInt(parts[1]) * -1;
+        
+        // Update BoardState memory
         BoardState boardState = gameRoom.getBoardState();
         if (boardState != null) {
+            // Determine which player is updating memory
             String currentPlayer = session.getPrincipal() != null ? session.getPrincipal().getName() : null;
+                    
             if (currentPlayer != null) {
                 boolean isPlayer1 = gameRoom.getPlayer1().username().equals(currentPlayer);
                 int newMemory = Integer.parseInt(parts[1]);
@@ -662,8 +817,11 @@ public class GameWebSocket extends TextWebSocketHandler {
     }
     
     private void startGameRoomScheduledTasks(GameRoom gameRoom) {
+        // Heartbeat Task
         ScheduledFuture<?> heartbeatTask = SHARED_SCHEDULER.scheduleWithFixedDelay(() -> {
-            if (!gameRooms.containsKey(gameRoom.getRoomId()) || gameRoom.isEmpty()) return;
+            if (!gameRooms.containsKey(gameRoom.getRoomId()) || gameRoom.isEmpty()) {
+                return; // Early exit if room no longer exists or is empty
+            }
             try {
                 gameRoom.sendMessagesToAll("[HEARTBEAT]");
             } catch (Exception e) {
@@ -672,12 +830,17 @@ public class GameWebSocket extends TextWebSocketHandler {
         }, 10, 10, TimeUnit.SECONDS);
         gameRoom.getScheduledTasks().add(heartbeatTask);
 
+        // Cleanup Task
         ScheduledFuture<?> cleanupTask = SHARED_SCHEDULER.scheduleWithFixedDelay(() -> {
-            if (!gameRooms.containsKey(gameRoom.getRoomId())) return;
+            if (!gameRooms.containsKey(gameRoom.getRoomId())) {
+                return; // Early exit if room no longer exists
+            }
             try {
                 if (gameRoom.isEmpty()) {
                     GameRoom removed = gameRooms.remove(gameRoom.getRoomId());
-                    if (removed != null) removed.cancelAllScheduledTasks();
+                    if (removed != null) {
+                        removed.cancelAllScheduledTasks();
+                    }
                 }
             } catch (Exception e) {
                 System.err.println("Error in empty check for room " + gameRoom.getRoomId() + ": " + e.getMessage());
