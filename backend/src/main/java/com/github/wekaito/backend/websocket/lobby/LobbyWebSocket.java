@@ -49,8 +49,7 @@ public class LobbyWebSocket extends TextWebSocketHandler {
 
     private final String warning = "[CHAT_MESSAGE]:【SERVER】: ⚠ The server detected multiple connections for the same user. Make sure to only use one tab per account. ⚠";
 
-    // ✅ WE CHANGED THE WELCOME MESSAGE SO YOU KNOW WHEN RENDER IS DONE UPDATING!
-    public final LinkedList<ChatMessage> globalChatMessages = new LinkedList<>(List.of(new ChatMessage("Spectator Mode is Live! (Up to 5 players)", "【SERVER】")));
+    public final LinkedList<ChatMessage> globalChatMessages = new LinkedList<>(List.of(new ChatMessage("Join our Discord!", "【SERVER】")));
 
     @Autowired
     private GameWebSocket gameWebSocket;
@@ -87,7 +86,7 @@ public class LobbyWebSocket extends TextWebSocketHandler {
         List<String> userBlockedAccounts = mongoUserDetailsService.getBlockedAccounts(username);
 
         List<Room> openRooms = rooms.stream()
-                .filter(r -> r.getPlayers().size() < 5)
+                .filter(r -> r.getPlayers().size() == 1)
                 .filter(r -> !userBlockedAccounts.contains(r.getHostName()))
                 .toList();
         List<RoomDTO> openRoomsDTO = openRooms.stream().map(this::getRoomDTO).toList();
@@ -149,9 +148,6 @@ public class LobbyWebSocket extends TextWebSocketHandler {
         if (payload.startsWith("/startGame:")) startGame(payload);
         if (payload.startsWith("/chatMessage:")) handleChatMessage(session, payload);
         if (payload.startsWith("/roomChatMessage:")) handleRoomChatMessage(session, payload);
-        
-        // Handles role change requests from the host
-        if (payload.startsWith("/setRole:")) handleSetRole(session, payload);
     }
 
     private boolean tryReconnectToRoom(WebSocketSession session) throws IOException {
@@ -163,9 +159,7 @@ public class LobbyWebSocket extends TextWebSocketHandler {
                 emptyRoomTimestamps.remove(previousRoomId);
                 boolean wasHost = previousRoom.getHostName().equals(username);
                 
-                // Keep same role as host, or default to spectator if joining a full table
-                String role = wasHost ? "PLAYER" : (previousRoom.getPlayers().size() < 2 ? "PLAYER" : "SPECTATOR");
-                LobbyPlayer player = new LobbyPlayer(session, username, wasHost, role);
+                LobbyPlayer player = new LobbyPlayer(session, username, wasHost, "PLAYER");
 
                 previousRoom.getPlayers().removeIf(p -> p.getName().equals(username));
                 previousRoom.getPlayers().add(player);
@@ -322,15 +316,15 @@ public class LobbyWebSocket extends TextWebSocketHandler {
     }
 
     private void broadcastRooms() throws IOException {
-        List<Room> joinableRooms = rooms.stream()
-                .filter(r -> r.getPlayers().size() < 5)
+        List<Room> roomsWithOnlyHosts = rooms.stream()
+                .filter(r -> r.getPlayers().size() == 1)
                 .toList();
 
         for (WebSocketSession session : globalActiveSessions) {
             String sessionUsername = Objects.requireNonNull(session.getPrincipal()).getName();
             List<String> sessionUserBlockedAccounts = mongoUserDetailsService.getBlockedAccounts(sessionUsername);
             
-            List<RoomDTO> filteredRoomDTOs = joinableRooms.stream()
+            List<RoomDTO> filteredRoomDTOs = roomsWithOnlyHosts.stream()
                     .filter(r -> !sessionUserBlockedAccounts.contains(r.getHostName()))
                     .map(this::getRoomDTO)
                     .toList();
@@ -405,8 +399,7 @@ public class LobbyWebSocket extends TextWebSocketHandler {
         }
         
         synchronized (room) {
-            // Allows up to 5 people (2 active players, 3 spectators)
-            if (room.getPlayers().size() >= 5) {
+            if (room.getPlayers().size() >= 2) {
                 sendTextMessage(session, "[CHAT_MESSAGE]:【SERVER】: Room is full.");
                 return;
             }
@@ -415,9 +408,7 @@ public class LobbyWebSocket extends TextWebSocketHandler {
                 return;
             }
 
-            // Defaults the first 2 players to "PLAYER" role, subsequent ones to "SPECTATOR"
-            String role = host ? "PLAYER" : (room.getPlayers().size() < 2 ? "PLAYER" : "SPECTATOR");
-            LobbyPlayer player = new LobbyPlayer(session, username, host, role);
+            LobbyPlayer player = new LobbyPlayer(session, username, host, "PLAYER");
             String roomJson = objectMapper.writeValueAsString(getRoomDTO(room));
 
             sendTextMessage(session, "[JOIN_ROOM]:" + roomJson);
@@ -493,7 +484,7 @@ public class LobbyWebSocket extends TextWebSocketHandler {
                 LobbyPlayer remainingPlayer = room.getPlayers().get(0);
                 room.setHostName(remainingPlayer.getName());
                 remainingPlayer.setReady(true);
-                remainingPlayer.setRole("PLAYER"); // Promotes the new host to Player
+                remainingPlayer.setRole("PLAYER");
             }
 
             roomIsEmpty = room.getPlayers().isEmpty();
@@ -588,31 +579,6 @@ public class LobbyWebSocket extends TextWebSocketHandler {
 
         for (LobbyPlayer player : room.getPlayers()) {
             sendTextMessage(player.getSession(), "[CHAT_MESSAGE_ROOM]:" + userName + ": " + chatMessage);
-        }
-    }
-
-    private void handleSetRole(WebSocketSession session, String payload) throws IOException {
-        String[] parts = payload.split(":", 4);
-        String roomId = parts[1];
-        String targetUser = parts[2];
-        String newRole = parts[3];
-
-        Room room = getRoomById(roomId);
-        if (room == null) return;
-
-        // Verify that only the host is requesting the role change
-        String host = Objects.requireNonNull(session.getPrincipal()).getName();
-        if (!room.getHostName().equals(host)) return;
-
-        synchronized (room) {
-            LobbyPlayer targetPlayer = room.getPlayers().stream()
-                    .filter(p -> p.getName().equals(targetUser))
-                    .findFirst().orElse(null);
-
-            if (targetPlayer != null) {
-                targetPlayer.setRole(newRole);
-                sendRoomUpdate(room);
-            }
         }
     }
 

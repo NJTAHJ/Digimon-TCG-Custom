@@ -283,12 +283,6 @@ export default function Lobby() {
         websocket.sendMessage("/toggleReady:" + joinedRoom?.id);
     }
 
-    function handleToggleRole(userName: string, currentRole: string) {
-        setIsLoadingWithDebounce();
-        const newRole = currentRole === "PLAYER" ? "SPECTATOR" : "PLAYER";
-        websocket.sendMessage("/setRole:" + joinedRoom?.id + ":" + userName + ":" + newRole);
-    }
-
     function handleLeaveRoom() {
         setIsLoadingWithDebounce();
         websocket.sendMessage("/leave:" + joinedRoom?.id + ":" + user + ":true");
@@ -303,9 +297,8 @@ export default function Lobby() {
     function handleStartGame() {
         setIsLoadingWithDebounce();
         cancelQuickPlayQueue();
-        const activePlayers = joinedRoom?.players.filter(p => p.role === "PLAYER") || [];
-        if (activePlayers.length !== 2) return;
-        const newGameID = activePlayers[0].name + "‗" + activePlayers[1].name;
+        if (joinedRoom?.players.length !== 2) return;
+        const newGameID = joinedRoom.players[0].name + "‗" + joinedRoom.players[1].name;
         websocket.sendMessage("/startGame:" + joinedRoom?.id + ":" + newGameID);
     }
 
@@ -356,14 +349,13 @@ export default function Lobby() {
     }, [joinedRoom, user, websocket]);
 
     const meInRoom = joinedRoom?.players.find((p) => p.name === user);
-    const activePlayersCount = joinedRoom?.players.filter((p) => p.role === "PLAYER").length;
 
     const startGameDisabled =
         activeDeckReadyState === DeckReadySate.NOT_FULL ||
         (!!joinedRoom &&
             (isLoading ||
-                !!joinedRoom.players.find((p) => !p.ready && p.role === "PLAYER") ||
-                activePlayersCount !== 2 ||
+                !!joinedRoom.players.find((p) => !p.ready) ||
+                joinedRoom.players.length !== 2 ||
                 (joinedRoom.restrictionsApplied && activeDeckReadyState === DeckReadySate.VIOLATES_RESTRICTIONS)));
 
     const isMobile = useMediaQuery("(max-width:499px)");
@@ -503,16 +495,7 @@ export default function Lobby() {
                                                     src={profilePicture(player.avatarName)}
                                                 />
 
-                                                <StyledSpan style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 4 }}>
-                                                    {player.name}
-                                                    {amIHost ? (
-                                                        <Button style={{fontSize: 12, padding: '2px 8px', height: 'auto', minWidth: 'unset'}} onClick={() => handleToggleRole(player.name, player.role || "PLAYER")}>
-                                                            {player.role || "PLAYER"}
-                                                        </Button>
-                                                    ) : (
-                                                        <span style={{fontSize: 14, color: 'gray'}}>{player.role || "PLAYER"}</span>
-                                                    )}
-                                                </StyledSpan>
+                                                <StyledSpan>{player.name}</StyledSpan>
 
                                                 {host ? (
                                                     <img
@@ -553,7 +536,7 @@ export default function Lobby() {
                                         .sort((a, b) => a.name.localeCompare(b.name))
                                         .map((room) => (
                                             <RoomTile key={room.id}>
-                                                <StyledSpan>{room.name} <span style={{fontSize: "16px", color: "gray", marginLeft: "8px"}}>({room.players.length}/5)</span></StyledSpan>
+                                                <StyledSpan>{room.name}</StyledSpan>
                                                 <StyledSpan>
                                                     <span>{room.hostName}</span>
                                                     <img
